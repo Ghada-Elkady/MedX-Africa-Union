@@ -1,0 +1,55 @@
+.neu-button {
+    background-color: #212121;
+    border-radius: 15px;
+    box-shadow: inset 4px 4px 10px #4d4d4d, inset -4px -4px 10px #5b5b5b;
+    color: #e0e0e0;
+    cursor: pointer;
+    display: block;
+    font-size: 18px;
+    padding: 10px 40px;
+    transition: all 0.2s ease-in-out;
+    border: 3px solid rgb(206, 206, 206);
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    -ms-border-radius: 15px;
+    -o-border-radius: 15px;
+}
+
+.neu-button:hover {
+    box-shadow: inset 2px 2px 5px #4d4d4d, inset -2px -2px 5px #7d7d7d, 2px 2px 5px #4d4d4d, -2px -2px 5px #7d7d7d;
+}
+
+.neu-button:focus {
+    outline: none;
+    box-shadow: inset 2px 2px 5px #4d4d4d, inset -2px -2px 5px #7d7d7d, 2px 2px 5px #4d4d4d, -2px -2px 5px #7d7d7d;
+}
+ .emp-button {
+    border-radius: 15px;
+    color: #212121;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 10px 30px;
+    display: block;
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+    border: 3px solid #212121;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    -ms-border-radius: 15px;
+    -o-border-radius: 15px;
+}
+
+.emp-button:hover {
+    background-color: #212121;
+    color: #e0e0e0;
+        border: 3px solid #e0e0e0;
+            box-shadow: inset 2px 2px 5px #4d4d4d, inset -2px -2px 5px #7d7d7d, 2px 2px 5px #4d4d4d, -2px -2px 5px #7d7d7d;
+}
+
+.emp-button:focus {
+    outline: none;
+    background-color: #212121;
+    color: #e0e0e0;
+        border: 3px solid #e0e0e0;
+        box-shadow: inset 2px 2px 5px #4d4d4d, inset -2px -2px 5px #7d7d7d, 2px 2px 5px #4d4d4d, -2px -2px 5px #7d7d7d;
+}

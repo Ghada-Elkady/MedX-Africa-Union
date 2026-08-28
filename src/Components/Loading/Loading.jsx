@@ -1,0 +1,13 @@
+import './Loading.css';
+export default function Loading() {
+  return (
+    <div className="loading">
+      <div className="loading-spinner">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  );
+}
