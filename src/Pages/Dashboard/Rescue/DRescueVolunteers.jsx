@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "universal-cookie";
+import { getEmergencyAlerts, resolveEmergencyAlert, formatAlertTime } from "../../../services/apiService";
 
 // Mock disaster data (Disaster places shown to rescue volunteers)
 const MOCK_DISASTER_SITES = [
@@ -94,6 +95,7 @@ const severityStyles = {
     Critical: { badge: "bg-red-100 text-red-700", dot: "bg-red-500" },
     High: { badge: "bg-orange-100 text-orange-700", dot: "bg-orange-500" },
     Medium: { badge: "bg-amber-100 text-amber-700", dot: "bg-amber-500" },
+    Warning: { badge: "bg-yellow-100 text-yellow-700", dot: "bg-yellow-500" },
     Low: { badge: "bg-green-100 text-green-700", dot: "bg-green-500" }
 };
 
@@ -230,6 +232,24 @@ const RescueVolunteersDashboard = () => {
     const cookie = new Cookies();
     const token = cookie.get("Bearer");
 
+    const mergeWithAlerts = (base) => {
+        const watchSites = getEmergencyAlerts().map((a) => ({
+            id: a.id + 100,
+            isWatchSos: true,
+            place: `${a.patientName || "Unknown patient"}${a.bloodType ? ` (${a.bloodType})` : ""}`,
+            location: a.address || "Location shared from watch",
+            type: a.type,
+            icon: a.icon || "🚨",
+            severity: a.severity || "High",
+            affected: a.affected || 1,
+            status: a.status,
+            volunteers: a.volunteers || 0,
+            reported: formatAlertTime(a.createdAt),
+            reason: a.reason
+        }));
+        return [...watchSites, ...base];
+    };
+
     useEffect(() => {
         const fetchSites = async () => {
             try {
@@ -243,11 +263,11 @@ const RescueVolunteersDashboard = () => {
                         }
                     }
                 );
-                setSites(response.data);
+                setSites(mergeWithAlerts(response.data));
             } catch (err) {
                 console.warn("Backend rescue API unavailable, showing demo data:", err.message);
                 setDemoMode(true);
-                setSites(MOCK_DISASTER_SITES);
+                setSites(mergeWithAlerts(MOCK_DISASTER_SITES));
             } finally {
                 setLoading(false);
             }
@@ -276,6 +296,11 @@ const RescueVolunteersDashboard = () => {
             "Mark this disaster place as Rescued / fully responded?"
         );
         if (!confirmed) return;
+
+        const target = sites.find((site) => site.id === id);
+        if (target?.isWatchSos) {
+            resolveEmergencyAlert(id - 100);
+        }
 
         setSites(prev =>
             prev.map(site =>
@@ -446,6 +471,12 @@ const RescueVolunteersDashboard = () => {
                                                     <i className="fa-solid fa-handshake-angle mr-1"></i>{site.volunteers} deployed
                                                 </span>
                                             </div>
+                                            {site.isWatchSos && (
+                                                <p className="mt-1.5 text-[11px] font-bold text-red-600 flex items-center gap-1">
+                                                    <i className="fa-solid fa-satellite-dish animate-pulse"></i>
+                                                    Watch SOS — {site.reason || "patient pressed panic button"}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="text-gray-700 text-sm flex items-center gap-1.5">
                                             <span>{site.icon}</span> {site.type}

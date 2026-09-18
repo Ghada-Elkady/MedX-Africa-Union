@@ -4,6 +4,7 @@ import logo from '../../assets/logo.png';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { User } from '../Context/Context';
 import UserSetting from './Setting';
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
     const userContext = useContext(User);
@@ -69,7 +70,12 @@ const Header = () => {
                             <i className="fa-solid fa-wand-magic-sparkles"></i>
                             <span>AI Assistant</span>
                         </Link>
-                        {userContext?.auth?.accessToken && <UserSetting />}
+                        {userContext?.auth?.accessToken && (
+                            <div className="flex items-center gap-1">
+                                <NotificationBell />
+                                <UserSetting />
+                            </div>
+                        )}
                     </div>
                 </nav>
 
@@ -143,7 +149,10 @@ const Header = () => {
                     {/* Auth & Quick CTAs */}
                     <div className="flex items-center gap-3 mt-6 lg:mt-0 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
                         {userContext?.auth?.accessToken ? (
-                            <UserSetting />
+                            <div className="flex items-center gap-1">
+                                <NotificationBell />
+                                <UserSetting />
+                            </div>
                         ) : (
                             <div className="flex items-center gap-2.5 w-full lg:w-auto">
                                 <Link to="/login" onClick={() => setOpenMenu(false)} className="w-full lg:w-auto">

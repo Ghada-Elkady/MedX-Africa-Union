@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { getStoredProfile } from "../../services/apiService";
+import { Link } from "react-router-dom";
+import { getStoredProfile, addEmergencyAlert, getEmergencyAlerts, formatAlertTime } from "../../services/apiService";
 
 const WATCHES = [
     { id: "apple", name: "Apple Watch", brand: "Apple", icon: "🍎", accents: ["Heart Rate", "ECG", "SpO2", "Sleep"] },
@@ -56,6 +57,12 @@ const DISEASE_STATUS_STYLES = {
     Active: "bg-red-100 text-red-700"
 };
 
+const DANGER_STYLES = {
+    Safe: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    Warning: "bg-amber-100 text-amber-700 border-amber-200",
+    Critical: "bg-red-100 text-red-700 border-red-200"
+};
+
 const SectionCard = ({ icon, title, subtitle, children, accent = "from-[#19A7CE] to-[#148AA1]" }) => (
     <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         <div className={`bg-gradient-to-r ${accent} px-6 py-5 flex items-center gap-3`}>
@@ -96,7 +103,14 @@ const SmartWatch = () => {
     const [tab, setTab] = useState("Today");
     const [syncing, setSyncing] = useState(false);
     const [lastSync, setLastSync] = useState("Just now");
+    const [watchAlert, setWatchAlert] = useState(null);
     const profile = getStoredProfile();
+
+    const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "MedX Patient";
+    const alertAddress = profile.address || "Location shared via profile";
+    const [myAlerts, setMyAlerts] = useState(() =>
+        getEmergencyAlerts().filter((a) => a.patientName === fullName)
+    );
 
     const chronicList = (profile.chronicConditions || "")
         .split(/[,،\n]+/)
@@ -117,6 +131,50 @@ const SmartWatch = () => {
             setSyncing(false);
             setLastSync("Just now");
         }, 1000);
+    };
+
+    const computeDanger = () => {
+        const hr = TODAY_READINGS.heartRate.value;
+        const o2 = TODAY_READINGS.oxygen.value;
+        const temp = TODAY_READINGS.temperature.value;
+        const [sys] = TODAY_READINGS.bloodPressure.value.split("/").map(Number);
+
+        if (hr > 140 || hr < 40) return { level: "Critical", reason: "Heart rate out of safe range" };
+        if (o2 < 90) return { level: "Critical", reason: "Dangerously low blood oxygen (SpO2)" };
+        if (temp >= 39.5) return { level: "Critical", reason: "Very high body temperature" };
+        if (sys >= 180) return { level: "Critical", reason: "Severe blood pressure reading" };
+        if (o2 < 94 || temp >= 38.5 || sys >= 140 || hr >= 110) {
+            return { level: "Warning", reason: "Vitals outside your usual range" };
+        }
+        return { level: "Safe", reason: "All vitals within normal limits" };
+    };
+
+    const triggerSos = (mode) => {
+        const danger = computeDanger();
+        const isSos = mode === "sos";
+
+        addEmergencyAlert({
+            patientName: fullName,
+            address: alertAddress,
+            phone: profile.phone || "",
+            emergencyContact: profile.emergencyContact || "",
+            bloodType: profile.bloodType || "Unknown",
+            type: isSos ? "Watch SOS — Panic Button" : "Watch SOS — Fall Detected",
+            icon: isSos ? "🆘" : "🩹",
+            severity: danger.level === "Safe" ? "High" : danger.level,
+            reason: danger.reason,
+            watch: connectedWatch ? connectedWatch.name : "MedX Watch"
+        });
+
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
+
+        setWatchAlert({
+            title: isSos ? "Panic SOS Sent" : "Fall Detected — SOS Sent",
+            body: `${fullName} signaled danger. Rescue Team notified with location, blood type & vitals.`,
+            severity: danger.level
+        });
+        setMyAlerts(getEmergencyAlerts().filter((a) => a.patientName === fullName));
+        setTimeout(() => setWatchAlert(null), 7000);
     };
 
     const renderMetrics = () => {
@@ -151,9 +209,37 @@ const SmartWatch = () => {
     };
 
     const metrics = renderMetrics();
+    const danger = computeDanger();
 
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-16">
+            {/* Simulated Watch Notification (dispatched to your watch) */}
+            {watchAlert && (
+                <div className={`fixed top-20 inset-x-0 z-[60] px-4`}>
+                    <div className={`mx-auto max-w-md rounded-2xl border-2 shadow-2xl p-4 flex items-start gap-3 animate-bounce ${
+                        watchAlert.severity === "Critical"
+                            ? "bg-red-600 border-red-300"
+                            : watchAlert.severity === "Warning"
+                                ? "bg-amber-500 border-amber-300"
+                                : "bg-[#19A7CE] border-[#148AA1]"
+                    } text-white`}>
+                        <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                            🚨
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <span className="bg-white/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">MEDX WATCH ALERT</span>
+                                <span className="text-[10px] font-bold">{connectedWatch ? connectedWatch.name : "MedX Watch"}</span>
+                            </div>
+                            <p className="font-extrabold text-sm mt-1">{watchAlert.title}</p>
+                            <p className="text-xs opacity-90 mt-0.5">{watchAlert.body}</p>
+                        </div>
+                        <button onClick={() => setWatchAlert(null)} className="text-white/80 hover:text-white text-lg leading-none">
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            )}
             <div className="max-w-6xl mx-auto px-5 space-y-8">
 
                 {/* Header */}
@@ -246,6 +332,100 @@ const SmartWatch = () => {
                             <MetricCard key={metric.label} metric={metric} />
                         ))}
                     </div>
+                </SectionCard>
+
+                {/* Danger, SOS & Rescue */}
+                <SectionCard icon="fa-triangle-exclamation" title="Danger & SOS — Rescue Link" subtitle="Your watch sensors detect danger and alert the Rescue Team instantly" accent="from-red-600 to-rose-700">
+                    <div className="grid sm:grid-cols-3 gap-3 mb-5">
+                        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Patient Profile</p>
+                            <p className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                                {fullName}
+                                <Link to="/profile" className="text-[#19A7CE] hover:underline text-xs font-semibold" title="Edit profile">
+                                    <i className="fa-solid fa-pen"></i>
+                                </Link>
+                            </p>
+                            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                                <i className="fa-solid fa-location-dot text-xs"></i>{alertAddress}
+                            </p>
+                        </div>
+                        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Emergency Contact</p>
+                            <p className="text-sm font-bold text-slate-800">{profile.emergencyContact || "Not set"}</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">Blood type: {profile.bloodType || "Unknown"}</p>
+                        </div>
+                        <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                            <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Sensor Safety Status</p>
+                            <span className={`inline-flex items-center gap-1.5 border px-3 py-1 rounded-full text-xs font-bold ${DANGER_STYLES[danger.level]}`}>
+                                <i className={`fa-solid ${danger.level === "Safe" ? "fa-shield-heart" : danger.level === "Warning" ? "fa-circle-exclamation" : "fa-triangle-exclamation"}`}></i>
+                                {danger.level}
+                            </span>
+                            <p className="text-[11px] text-slate-500 mt-2">{danger.reason}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 rounded-2xl p-5">
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center text-xl shadow-md">
+                                <i className="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <p className="font-extrabold text-slate-900 text-sm">Send an SOS signal</p>
+                                <p className="text-xs text-slate-500">
+                                    If you are in danger, MedX dispatches your location, blood type & vitals to the Rescue Volunteers team and notifies your watch + app.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                                onClick={() => triggerSos("sos")}
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors shadow-md flex items-center gap-1.5"
+                            >
+                                <i className="fa-solid fa-satellite-dish"></i> Send SOS
+                            </button>
+                            <button
+                                onClick={() => triggerSos("fall")}
+                                className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors shadow-md flex items-center gap-1.5"
+                            >
+                                <i className="fa-solid fa-person-falling"></i> Simulate Fall
+                            </button>
+                        </div>
+                    </div>
+
+                    {myAlerts.length > 0 && (
+                        <div className="mt-5">
+                            <p className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                                <i className="fa-solid fa-flag text-red-600"></i> My rescue alerts
+                            </p>
+                            <div className="space-y-2">
+                                {myAlerts.map((alert) => (
+                                    <div key={alert.id} className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="text-xl">{alert.icon}</span>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-800">{alert.type}</p>
+                                                <p className="text-[11px] text-slate-500 truncate">{alert.reason}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 flex-shrink-0">
+                                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                alert.status === "Rescued" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                            }`}>
+                                                {alert.status}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400 whitespace-nowrap">{formatAlertTime(alert.createdAt)}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <Link
+                                to="/dashboard/rescue"
+                                className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#19A7CE] hover:underline"
+                            >
+                                <i className="fa-solid fa-flag"></i> Track in the Rescue Volunteers Center
+                            </Link>
+                        </div>
+                    )}
                 </SectionCard>
 
                 {/* Diagnoses */}

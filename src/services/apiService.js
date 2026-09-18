@@ -11,6 +11,8 @@ export const STORAGE_KEYS = {
   RECENT_AI_CHAT: 'seta_recent_ai_chat',
   LAB_REPORTS: 'seta_lab_reports',
   PROFILE: 'seta_profile',
+  EMERGENCY_ALERTS: 'seta_emergency_alerts',
+  NOTIFICATIONS: 'seta_notifications',
 };
 
 // Initial Mock Doctors Data
@@ -453,4 +455,76 @@ export const getStoredProfile = () =>
 export const saveProfile = (profile) => {
   localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
   return profile;
+};
+
+// ─── App Notifications ────────────────────────────────────────────────
+export const getNotifications = () => readJSON(STORAGE_KEYS.NOTIFICATIONS, []);
+
+export const getUnreadNotificationCount = () =>
+  getNotifications().filter((n) => !n.read).length;
+
+export const addNotification = (notification) => {
+  const current = getNotifications();
+  const created = {
+    id: Date.now(),
+    read: false,
+    createdAt: new Date().toISOString(),
+    icon: "🔔",
+    title: "MedX Notification",
+    body: "",
+    ...notification,
+  };
+  const updated = [created, ...current].slice(0, 50);
+  localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(updated));
+  return created;
+};
+
+export const markNotificationsRead = () => {
+  const updated = getNotifications().map((n) => ({ ...n, read: true }));
+  localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(updated));
+  return updated;
+};
+
+// ─── Emergency / Rescue Alerts (watch danger → rescue team) ───────────
+export const getEmergencyAlerts = () => readJSON(STORAGE_KEYS.EMERGENCY_ALERTS, []);
+
+export const addEmergencyAlert = (alert) => {
+  const current = getEmergencyAlerts();
+  const created = {
+    id: current.length ? Math.max(...current.map((a) => a.id)) + 1 : 1,
+    createdAt: new Date().toISOString(),
+    status: "Active",
+    affected: 1,
+    volunteers: 0,
+    type: "Medical Emergency",
+    icon: "🚨",
+    ...alert,
+  };
+  const updated = [created, ...current].slice(0, 100);
+  localStorage.setItem(STORAGE_KEYS.EMERGENCY_ALERTS, JSON.stringify(updated));
+
+  addNotification({
+    icon: "🚨",
+    title: "Rescue Alert Sent",
+    body: `Danger signal from ${created.patientName || "patient"} sent to the Rescue Team.`,
+  });
+
+  return created;
+};
+
+export const resolveEmergencyAlert = (id) => {
+  const updated = getEmergencyAlerts().map((a) =>
+    a.id === id ? { ...a, status: "Rescued" } : a
+  );
+  localStorage.setItem(STORAGE_KEYS.EMERGENCY_ALERTS, JSON.stringify(updated));
+  return updated;
+};
+
+export const formatAlertTime = (iso) => {
+  if (!iso) return "Just now";
+  const seconds = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return "Just now";
+  if (seconds < 3600) return `${Math.round(seconds / 60)} min ago`;
+  if (seconds < 86400) return `${Math.round(seconds / 3600)} hrs ago`;
+  return new Date(iso).toLocaleDateString();
 };
