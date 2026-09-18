@@ -104,6 +104,124 @@ const statusStyles = {
     Rescued: "bg-green-50 text-green-700 border-green-200"
 };
 
+const riskStyles = {
+    High: "bg-red-100 text-red-700",
+    Medium: "bg-amber-100 text-amber-700",
+    Low: "bg-green-100 text-green-700"
+};
+
+// Mock disaster-related diseases (health risks that spread after disasters)
+const MOCK_DISASTER_DISEASES = [
+    {
+        id: 1,
+        name: "Cholera",
+        icon: "🦠",
+        relatedTo: ["Flooding", "Storm"],
+        risk: "High",
+        mode: "Contaminated water & food",
+        advice: "Use boiled/treated water, wash hands with soap, report watery diarrhea immediately.",
+    },
+    {
+        id: 2,
+        name: "Dengue Fever",
+        icon: "🦟",
+        relatedTo: ["Flooding", "Storm"],
+        risk: "High",
+        mode: "Mosquito bites in stagnant water",
+        advice: "Drain standing water, use mosquito nets and repellent, cover water containers.",
+    },
+    {
+        id: 3,
+        name: "Tetanus",
+        icon: "🩹",
+        relatedTo: ["Earthquake", "Structural Collapse"],
+        risk: "Medium",
+        mode: "Wounds cut by debris & metal",
+        advice: "Clean all wounds, verify tetanus vaccination, watch for jaw stiffness.",
+    },
+    {
+        id: 4,
+        name: "Acute Respiratory Infection",
+        icon: "🫁",
+        relatedTo: ["Fire", "Storm"],
+        risk: "Medium",
+        mode: "Smoke inhalation & dust exposure",
+        advice: "Wear N95 masks near smoke/debris, keep rescue areas ventilated.",
+    },
+    {
+        id: 5,
+        name: "Leptospirosis",
+        icon: "🐀",
+        relatedTo: ["Flooding"],
+        risk: "High",
+        mode: "Animal urine in floodwater",
+        advice: "Wear waterproof boots & gloves, avoid wading barefoot, cover any cuts.",
+    },
+    {
+        id: 6,
+        name: "Skin & Wound Infections",
+        icon: "🧴",
+        relatedTo: ["Earthquake", "Flooding", "Structural Collapse"],
+        risk: "Medium",
+        mode: "Dirty water, debris, and overcrowded shelters",
+        advice: "Dress wounds with clean bandaging, keep skin dry, seek help for redness or pus.",
+    },
+    {
+        id: 7,
+        name: "Malaria",
+        icon: "🦟",
+        relatedTo: ["Flooding", "Storm"],
+        risk: "High",
+        mode: "Mosquito bites in flooded areas",
+        advice: "Sleep under treated nets, apply repellent, clear stagnant pools.",
+    },
+    {
+        id: 8,
+        name: "Typhoid Fever",
+        icon: "🌡️",
+        relatedTo: ["Flooding"],
+        risk: "High",
+        mode: "Unsafe food & water after floods",
+        advice: "Drink only boiled water, eat thoroughly cooked food, keep food covered.",
+    },
+    {
+        id: 9,
+        name: "Carbon Monoxide Poisoning",
+        icon: "💨",
+        relatedTo: ["Fire", "Storm"],
+        risk: "Medium",
+        mode: "Generators & heaters in closed shelters",
+        advice: "Never run generators indoors, keep vents open, watch for dizziness & headaches.",
+    },
+    {
+        id: 10,
+        name: "Hypothermia",
+        icon: "❄️",
+        relatedTo: ["Storm", "Flooding"],
+        risk: "Low",
+        mode: "Prolonged exposure to cold & wet",
+        advice: "Provide dry blankets & warm shelter, keep vulnerable people (children/elderly) warm.",
+    },
+    {
+        id: 11,
+        name: "Waterborne Diarrhea",
+        icon: "💧",
+        relatedTo: ["Flooding", "Storm"],
+        risk: "High",
+        mode: "Contaminated drinking water",
+        advice: "Distribute oral rehydration salts, treat water with chlorine or boiling.",
+    },
+    {
+        id: 12,
+        name: "Staph Skin Infections",
+        icon: "🩹",
+        relatedTo: ["Earthquake", "Structural Collapse"],
+        risk: "Medium",
+        mode: "Crowded shelters & dirty wounds",
+        advice: "Maintain shelter hygiene, disinfect surfaces, isolate infected wounds.",
+    }
+];
+
 const RescueVolunteersDashboard = () => {
     const [sites, setSites] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -367,6 +485,60 @@ const RescueVolunteersDashboard = () => {
                                 );
                             })
                         )}
+                    </div>
+                </div>
+
+                {/* Disaster Diseases & Health Risks */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                <i className="fa-solid fa-disease"></i> Disaster Diseases & Health Risks
+                            </h2>
+                            <p className="text-emerald-100 text-sm mt-1">
+                                Diseases that spread after disasters — know the risks before deploying
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {["High", "Medium", "Low"].map((r) => (
+                                <span key={r} className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${riskStyles[r].replace("bg-", "bg-white/")}`}>
+                                    {r} risk
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+                        {MOCK_DISASTER_DISEASES.map((disease) => (
+                            <div key={disease.id} className="border border-slate-100 rounded-2xl p-4 hover:border-emerald-200 hover:shadow-sm transition">
+                                <div className="flex items-start justify-between gap-2">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-xl flex items-center justify-center">
+                                            {disease.icon}
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-900 font-bold text-sm">{disease.name}</p>
+                                            <p className="text-xs text-gray-500">{disease.mode}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0 ${riskStyles[disease.risk]}`}>
+                                        {disease.risk}
+                                    </span>
+                                </div>
+                                <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+                                    {disease.relatedTo.map((rel) => (
+                                        <span key={rel} className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                                            <i className="fa-solid fa-triangle-exclamation text-[9px]"></i>
+                                            {rel}
+                                        </span>
+                                    ))}
+                                </div>
+                                <p className="mt-3 text-xs text-slate-500 leading-relaxed">
+                                    <span className="font-bold text-slate-700">Prevention: </span>
+                                    {disease.advice}
+                                </p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
