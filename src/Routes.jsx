@@ -18,6 +18,7 @@ import AddPharmacy from "./Pages/Dashboard/Pharmacies/DAddPharmacy";
 import LaboratoriesDashboard from "./Pages/Dashboard/LaboratorIes/DLaboratories";
 import AddLaboratory from "./Pages/Dashboard/LaboratorIes/DAddLaboratory";
 import ReservationsDashboard from "./Pages/Dashboard/Reservations/DReservations";
+import RescueVolunteersDashboard from "./Pages/Dashboard/Rescue/DRescueVolunteers";
 import DeveloperTeam from "./Pages/About/Team/Team";
 import AddRadiology from "./Pages/Dashboard/Radiology/DAddRadiology";
 import RadiologiesDashboard from "./Pages/Dashboard/Radiology/DRadiologies";
@@ -67,6 +68,7 @@ const AppRoutes = () => {
           <Route path="radiology" element={<RadiologiesDashboard />} />
           <Route path="add-radiology" element={<AddRadiology />} />
           <Route path="reservations" element={<ReservationsDashboard />} />
+          <Route path="rescue" element={<RescueVolunteersDashboard />} />
         </Route>
       </Route>
 

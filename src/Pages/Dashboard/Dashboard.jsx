@@ -23,7 +23,8 @@ export default function Dashboard() {
     { to: "/dashboard/pharmacies", label: "Pharmacies Admin", icon: "💊" },
     { to: "/dashboard/laboratories", label: "Laboratories Admin", icon: "🧪" },
     { to: "/dashboard/radiology", label: "Radiology Admin", icon: "🦴" },
-    { to: "/dashboard/reservations", label: "Reservations Log", icon: "📅" }
+    { to: "/dashboard/reservations", label: "Reservations Log", icon: "📅" },
+    { to: "/dashboard/rescue", label: "Rescue Volunteers", icon: "🚨" }
   ];
 
   return (
