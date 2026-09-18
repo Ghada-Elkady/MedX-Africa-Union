@@ -35,6 +35,7 @@ import Terms from "./Pages/Legal/Terms";
 import Privacy from "./Pages/Legal/Privacy";
 
 // New Feature Imports
+import SmartWatch from "./Pages/Wearable/SmartWatch";
 import ConsultationRoom from "./Pages/Consultation/ConsultationRoom";
 import PrescriptionView from "./Pages/Prescriptions/PrescriptionView";
 import ReportExplainer from "./Pages/ReportExplainer/ReportExplainer";
@@ -54,6 +55,7 @@ const AppRoutes = () => {
         <Route path="/ask" element={<AskAI />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/profile" element={<PatientProfile />} />
+        <Route path="/smart-watch" element={<SmartWatch />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         
