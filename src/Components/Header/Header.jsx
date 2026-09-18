@@ -5,27 +5,29 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { User } from '../Context/Context';
 import UserSetting from './Setting';
 import NotificationBell from './NotificationBell';
+import { useLanguage } from '../Context/LanguageContext';
 
 const Header = () => {
     const userContext = useContext(User);
     const location = useLocation();
     const [openMenu, setOpenMenu] = useState(false);
     const headerRef = useRef(null);
+    const { lang, t, toggleLang } = useLanguage();
 
     const navLinks = [
-        { to: "/", label: "Home", id: "home" },
-        { to: "/ask", label: "Ask MedX AI", id: "ask", isAi: true },
-        { to: "/doctors", label: "Doctors", id: "doctors" },
-        { to: "/prescriptions", label: "Prescriptions", id: "prescriptions" },
-        { to: "/services/search/pharmacies", label: "E-Pharmacy", id: "pharmacies" },
+        { to: "/", label: "Home", labelKey: "nav_home", id: "home" },
+        { to: "/ask", label: "Ask MedX AI", labelKey: "nav_ask", id: "ask", isAi: true },
+        { to: "/doctors", label: "Doctors", labelKey: "nav_doctors", id: "doctors" },
+        { to: "/prescriptions", label: "Prescriptions", labelKey: "nav_prescriptions", id: "prescriptions" },
+        { to: "/services/search/pharmacies", label: "E-Pharmacy", labelKey: "nav_pharmacy", id: "pharmacies" },
         {
-            to: "/services", label: "Labs & Radiology", id: "services", sections: [
+            to: "/services", label: "Labs & Radiology", labelKey: "nav_labs", id: "services", sections: [
                 { value: "Laboratories", en: "Laboratories", to: "/services/search/Laboratories" },
                 { value: "Radiology", en: "Radiologies", to: "/services/search/radiologies" }
             ]
         },
-        { to: "/report-explainer", label: "Report Explainer", id: "report-explainer" },
-        { to: "/dashboard", label: "Dashboard", id: "dashboard" }
+        { to: "/report-explainer", label: "Report Explainer", labelKey: "nav_explainer", id: "report-explainer" },
+        { to: "/dashboard", label: "Dashboard", labelKey: "nav_dashboard", id: "dashboard" }
     ];
 
     useEffect(() => {
@@ -66,9 +68,16 @@ const Header = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={toggleLang}
+                            className="p-2 rounded-xl text-slate-600 hover:text-[#19A7CE] hover:bg-[#19A7CE]/10 transition-colors text-xs font-bold"
+                            title="Switch language"
+                        >
+                            {lang === "en" ? "ع" : "EN"}
+                        </button>
                         <Link to="/ask" className="bg-[#19A7CE]/10 text-[#19A7CE] text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 hover:bg-[#19A7CE]/20 transition-colors">
                             <i className="fa-solid fa-wand-magic-sparkles"></i>
-                            <span>AI Assistant</span>
+                            <span>{t("nav_ai")}</span>
                         </Link>
                         {userContext?.auth?.accessToken && (
                             <div className="flex items-center gap-1">
@@ -121,7 +130,7 @@ const Header = () => {
                                     >
                                         <div className="flex items-center gap-2">
                                             {link.isAi && <i className="fa-solid fa-wand-magic-sparkles"></i>}
-                                            <span>{link.label}</span>
+                                            <span>{t(link.labelKey)}</span>
                                         </div>
                                         {link.sections && <i className="fas fa-chevron-down text-xs text-slate-400 group-hover:rotate-180 transition-transform"></i>}
                                     </Link>
@@ -148,6 +157,13 @@ const Header = () => {
 
                     {/* Auth & Quick CTAs */}
                     <div className="flex items-center gap-3 mt-6 lg:mt-0 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                        <button
+                            onClick={toggleLang}
+                            className="p-2 rounded-xl text-slate-600 hover:text-[#19A7CE] hover:bg-[#19A7CE]/10 transition-colors text-xs font-bold"
+                            title="Switch language"
+                        >
+                            {lang === "en" ? "ع" : "EN"}
+                        </button>
                         {userContext?.auth?.accessToken ? (
                             <div className="flex items-center gap-1">
                                 <NotificationBell />
@@ -157,12 +173,12 @@ const Header = () => {
                             <div className="flex items-center gap-2.5 w-full lg:w-auto">
                                 <Link to="/login" onClick={() => setOpenMenu(false)} className="w-full lg:w-auto">
                                     <button className="w-full px-4 py-2 text-sm font-semibold text-slate-700 hover:text-[#19A7CE] hover:bg-slate-100 rounded-xl transition-all">
-                                        Sign In
+                                        {t("nav_signin")}
                                     </button>
                                 </Link>
                                 <Link to="/signup" onClick={() => setOpenMenu(false)} className="w-full lg:w-auto">
                                     <button className="w-full px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#19A7CE] to-[#148AA1] hover:shadow-md hover:shadow-[#19A7CE]/20 rounded-xl transition-all">
-                                        Get Started
+                                        {t("nav_getStarted")}
                                     </button>
                                 </Link>
                             </div>

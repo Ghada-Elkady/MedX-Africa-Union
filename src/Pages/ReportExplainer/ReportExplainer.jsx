@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { getLabReports, saveLabReport, deleteLabReport } from "../../services/apiService";
 
 const ReportExplainer = () => {
   const [fastingGlucose, setFastingGlucose] = useState(105);
   const [hba1c, setHba1c] = useState(5.8);
   const [hemoglobin, setHemoglobin] = useState(13.8);
   const [totalCholesterol, setTotalCholesterol] = useState(210);
+  const [reports, setReports] = useState(getLabReports());
+  const [explaining, setExplaining] = useState(null);
 
   const getGlucoseStatus = (val) => {
     if (val < 70) return { label: "Low (Hypoglycemia)", color: "text-amber-600 bg-amber-50 border-amber-200" };
@@ -24,6 +27,25 @@ const ReportExplainer = () => {
     if (val < 200) return { label: "Desirable / Normal", color: "text-emerald-600 bg-emerald-50 border-emerald-200" };
     if (val <= 239) return { label: "Borderline High", color: "text-amber-600 bg-amber-50 border-amber-200" };
     return { label: "High", color: "text-red-600 bg-red-50 border-red-200" };
+  };
+
+  const handleUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const created = saveLabReport({ name: file.name, type: file.type, dataUrl: reader.result });
+      setReports(getLabReports());
+      setExplaining(created.id);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const removeReport = (id) => {
+    deleteLabReport(id);
+    setReports(getLabReports());
+    if (explaining === id) setExplaining(null);
   };
 
   return (
@@ -47,6 +69,80 @@ const ReportExplainer = () => {
           <div>
             <strong>Educational Disclaimer:</strong> This explainer tool provides general reference range info for educational awareness. Lab results must always be interpreted by a qualified medical professional alongside your overall clinical history.
           </div>
+        </div>
+
+        {/* Upload Your Lab Report */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="px-6 py-5 bg-gradient-to-r from-[#19A7CE] to-[#148AA1] flex items-center gap-3">
+            <div className="w-11 h-11 bg-white/20 text-white rounded-xl flex items-center justify-center text-lg">
+              <i className="fa-solid fa-file-upload"></i>
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Upload Your Lab Report</h3>
+              <p className="text-xs text-white/70">Add a photo or PDF — MedX explains key values and stores it to your profile</p>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 p-6">
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-10 cursor-pointer hover:border-[#19A7CE] hover:bg-[#19A7CE]/5 transition text-center">
+              <i className="fa-solid fa-cloud-arrow-up text-4xl text-[#19A7CE] mb-3"></i>
+              <p className="font-bold text-slate-800 text-sm">Click to upload your report</p>
+              <p className="text-xs text-slate-400 mt-1">JPG, PNG or PDF — max 10 MB</p>
+              <input type="file" accept="image/*,application/pdf" onChange={handleUpload} className="hidden" />
+            </label>
+
+            <div className="space-y-3">
+              {reports.length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-8 border border-dashed border-slate-200 rounded-2xl">
+                  No reports uploaded yet.
+                </p>
+              ) : (
+                reports.map((r) => (
+                  <div key={r.id} className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:bg-slate-50 transition">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-cyan-100 text-cyan-600 flex items-center justify-center flex-shrink-0">
+                        <i className={`fa-solid ${r.type === "application/pdf" ? "fa-file-pdf" : "fa-file-image"}`}></i>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-800 truncate">{r.name}</p>
+                        <p className="text-[11px] text-slate-500">{new Date(r.uploadedAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button
+                        onClick={() => setExplaining(r.id)}
+                        className="w-8 h-8 rounded-lg bg-[#19A7CE]/10 text-[#19A7CE] hover:bg-[#19A7CE]/20 transition"
+                        title="Explain this report"
+                      >
+                        <i className="fa-solid fa-wand-magic-sparkles"></i>
+                      </button>
+                      <button
+                        onClick={() => removeReport(r.id)}
+                        className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition"
+                        title="Delete report"
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {explaining != null && (
+            <div className="mx-6 mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+              <p className="text-xs font-bold text-emerald-800 mb-2 flex items-center gap-2">
+                <i className="fa-solid fa-wand-magic-sparkles"></i> MedX Report Explanation
+              </p>
+              <p className="text-xs text-emerald-900 leading-relaxed">
+                This report contains laboratory tests that typically cover blood glucose, lipid panel and complete blood count. Review the interactive cards above to compare each value with its reference range. Values outside range usually prompt a follow-up — share this report with a specialist for a full interpretation.
+              </p>
+              <Link to="/ask" className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-[#19A7CE] hover:underline">
+                <i className="fa-solid fa-arrow-right"></i> Ask MedX AI for a deeper analysis
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Input & Range Analysis Cards */}

@@ -36,6 +36,7 @@ import Privacy from "./Pages/Legal/Privacy";
 
 // New Feature Imports
 import SmartWatch from "./Pages/Wearable/SmartWatch";
+import Reminders from "./Pages/Reminders/Reminders";
 import ConsultationRoom from "./Pages/Consultation/ConsultationRoom";
 import PrescriptionView from "./Pages/Prescriptions/PrescriptionView";
 import ReportExplainer from "./Pages/ReportExplainer/ReportExplainer";
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/profile" element={<PatientProfile />} />
         <Route path="/smart-watch" element={<SmartWatch />} />
+        <Route path="/reminders" element={<Reminders />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         

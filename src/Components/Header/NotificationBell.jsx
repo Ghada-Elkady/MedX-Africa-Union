@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getNotifications, getUnreadNotificationCount, markNotificationsRead } from "../../services/apiService";
+import { useLanguage } from "../Context/LanguageContext";
 
 const NotificationBell = () => {
+    const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [count, setCount] = useState(0);
@@ -89,7 +91,7 @@ const NotificationBell = () => {
                             onClick={() => setOpen(false)}
                             className="block w-full text-center text-xs font-bold text-[#19A7CE] bg-[#19A7CE]/10 hover:bg-[#19A7CE]/20 py-2 rounded-lg transition-colors"
                         >
-                            <i className="fa-solid fa-flag mr-1"></i> View Rescue Center
+                            <i className="fa-solid fa-flag mr-1"></i> {t("notif_viewRescue")}
                         </Link>
                     </div>
                 </div>

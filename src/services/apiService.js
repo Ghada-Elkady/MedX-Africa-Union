@@ -13,6 +13,10 @@ export const STORAGE_KEYS = {
   PROFILE: 'seta_profile',
   EMERGENCY_ALERTS: 'seta_emergency_alerts',
   NOTIFICATIONS: 'seta_notifications',
+  VOLUNTEERS: 'seta_volunteers',
+  SHIFTS: 'seta_shifts',
+  REMINDERS: 'seta_reminders',
+  LANG: 'seta_lang',
 };
 
 // Initial Mock Doctors Data
@@ -527,4 +531,109 @@ export const formatAlertTime = (iso) => {
   if (seconds < 3600) return `${Math.round(seconds / 60)} min ago`;
   if (seconds < 86400) return `${Math.round(seconds / 3600)} hrs ago`;
   return new Date(iso).toLocaleDateString();
+};
+
+// ─── Rescue Volunteers ───────────────────────────────────────────────
+export const getVolunteers = () => readJSON(STORAGE_KEYS.VOLUNTEERS, []);
+
+export const registerVolunteer = (volunteer) => {
+  const current = getVolunteers();
+  const created = {
+    id: current.length ? Math.max(...current.map((v) => v.id)) + 1 : 1,
+    registeredAt: new Date().toISOString(),
+    ...volunteer,
+  };
+  const updated = [created, ...current].slice(0, 100);
+  localStorage.setItem(STORAGE_KEYS.VOLUNTEERS, JSON.stringify(updated));
+
+  addNotification({
+    icon: "🧑‍🤝‍🧑",
+    title: "Welcome to the Rescue Team",
+    body: `${volunteer.name || "Volunteer"} registered successfully. Shifts are available now.`,
+  });
+
+  return created;
+};
+
+// ─── Rescue Shifts ───────────────────────────────────────────────────
+export const getShifts = () => readJSON(STORAGE_KEYS.SHIFTS, []);
+
+export const DEFAULT_SHIFTS = [
+  { id: 1, title: "Field Response — Morning", time: "Today · 8:00 AM – 2:00 PM", zone: "Downtown Cairo", spots: 3, icon: "🚑" },
+  { id: 2, title: "Evacuation Support", time: "Today · 3:00 PM – 9:00 PM", zone: "Nasr City", spots: 2, icon: "🛟" },
+  { id: 3, title: "Medical Triage Post", time: "Tomorrow · 7:00 AM – 1:00 PM", zone: "Maadi", spots: 5, icon: "🩺" },
+  { id: 4, title: "Relief Supplies Distribution", time: "Tomorrow · 1:00 PM – 7:00 PM", zone: "Giza", spots: 4, icon: "📦" },
+  { id: 5, title: "Night Patrol — Flood Zone", time: "Day after · 10:00 PM – 6:00 AM", zone: "Embaba", spots: 2, icon: "🌙" },
+];
+
+export const saveShift = (shift) => {
+  const current = getShifts();
+  const updated = [shift, ...current];
+  localStorage.setItem(STORAGE_KEYS.SHIFTS, JSON.stringify(updated));
+
+  addNotification({
+    icon: "🗓️",
+    title: "Shift Accepted",
+    body: `You joined: ${shift.title}. Notify the coordinator before your start time.`,
+  });
+
+  return updated;
+};
+
+// ─── Medication & Appointment Reminders ─────────────────────────────
+export const getReminders = () => readJSON(STORAGE_KEYS.REMINDERS, []);
+
+export const saveReminder = (reminder) => {
+  const current = getReminders();
+  const created = {
+    id: current.length ? Math.max(...current.map((r) => r.id)) + 1 : 1,
+    createdAt: new Date().toISOString(),
+    notified: false,
+    ...reminder,
+  };
+  const updated = [created, ...current].slice(0, 100);
+  localStorage.setItem(STORAGE_KEYS.REMINDERS, JSON.stringify(updated));
+  return created;
+};
+
+export const deleteReminder = (id) => {
+  const updated = getReminders().filter((r) => r.id !== id);
+  localStorage.setItem(STORAGE_KEYS.REMINDERS, JSON.stringify(updated));
+  return updated;
+};
+
+export const markReminderNotified = (id) => {
+  const updated = getReminders().map((r) =>
+    r.id === id ? { ...r, notified: true } : r
+  );
+  localStorage.setItem(STORAGE_KEYS.REMINDERS, JSON.stringify(updated));
+  return updated;
+};
+
+// ─── Language preference ─────────────────────────────────────────────
+export const getStoredLang = () => readJSON(STORAGE_KEYS.LANG, "en");
+
+export const saveStoredLang = (lang) => {
+  localStorage.setItem(STORAGE_KEYS.LANG, JSON.stringify(lang));
+  return lang;
+};
+
+// ─── Lab Reports (upload + explain) ──────────────────────────────────
+export const getLabReports = () => readJSON(STORAGE_KEYS.LAB_REPORTS, []);
+
+export const saveLabReport = (report) => {
+  const created = {
+    id: Date.now(),
+    uploadedAt: new Date().toISOString(),
+    ...report,
+  };
+  const updated = [created, ...getLabReports()].slice(0, 20);
+  localStorage.setItem(STORAGE_KEYS.LAB_REPORTS, JSON.stringify(updated));
+  return created;
+};
+
+export const deleteLabReport = (id) => {
+  const updated = getLabReports().filter((r) => r.id !== id);
+  localStorage.setItem(STORAGE_KEYS.LAB_REPORTS, JSON.stringify(updated));
+  return updated;
 };

@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import { User } from "../../Components/Context/Context";
 import { getStoredAppointments, getStoredPrescriptions } from "../../services/apiService";
+import { useLanguage } from "../../Components/Context/LanguageContext";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -9,6 +10,7 @@ export default function Dashboard() {
   const [prescriptions, setPrescriptions] = useState([]);
   const location = useLocation();
   const userContext = useContext(User);
+  const { t } = useLanguage();
   const userName = userContext?.auth?.user?.username || userContext?.auth?.user?.email?.split("@")[0] || "Guest";
   const userInitial = (userName.charAt(0) || "M").toUpperCase();
 
@@ -18,13 +20,13 @@ export default function Dashboard() {
   }, [location]);
 
   const menuItems = [
-    { to: "/dashboard", label: "Patient Overview", icon: "📊" },
-    { to: "/dashboard/doctors", label: "Doctors Admin", icon: "👨‍⚕️" },
-    { to: "/dashboard/pharmacies", label: "Pharmacies Admin", icon: "💊" },
-    { to: "/dashboard/laboratories", label: "Laboratories Admin", icon: "🧪" },
-    { to: "/dashboard/radiology", label: "Radiology Admin", icon: "🦴" },
-    { to: "/dashboard/reservations", label: "Reservations Log", icon: "📅" },
-    { to: "/dashboard/rescue", label: "Rescue Volunteers", icon: "🚨" }
+    { to: "/dashboard", labelKey: "dash_overview", label: "Patient Overview", icon: "📊" },
+    { to: "/dashboard/doctors", labelKey: "dash_doctors", label: "Doctors Admin", icon: "👨‍⚕️" },
+    { to: "/dashboard/pharmacies", labelKey: "dash_pharmacies", label: "Pharmacies Admin", icon: "💊" },
+    { to: "/dashboard/laboratories", labelKey: "dash_labs", label: "Laboratories Admin", icon: "🧪" },
+    { to: "/dashboard/radiology", labelKey: "dash_radiology", label: "Radiology Admin", icon: "🦴" },
+    { to: "/dashboard/reservations", labelKey: "dash_reservations", label: "Reservations Log", icon: "📅" },
+    { to: "/dashboard/rescue", labelKey: "dash_rescue", label: "Rescue Volunteers", icon: "🚨" }
   ];
 
   return (
@@ -71,7 +73,7 @@ export default function Dashboard() {
                 }`}
               >
                 <span>{item.icon}</span>
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Link>
             ))}
           </nav>
@@ -80,7 +82,7 @@ export default function Dashboard() {
         <div className="p-4 border-t border-slate-100">
           <Link to="/" className="flex items-center gap-2 px-4 py-3 text-xs font-bold text-slate-500 hover:text-slate-800 transition">
             <i className="fa-solid fa-arrow-left"></i>
-            <span>Back to MedX Home</span>
+            <span>{t("dash_backHome")}</span>
           </Link>
         </div>
       </aside>

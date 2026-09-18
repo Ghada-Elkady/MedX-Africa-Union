@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { jsPDF } from "jspdf";
 import { getStoredProfile, addEmergencyAlert, getEmergencyAlerts, formatAlertTime } from "../../services/apiService";
+import { useLanguage } from "../../Components/Context/LanguageContext";
 
 const WATCHES = [
     { id: "apple", name: "Apple Watch", brand: "Apple", icon: "🍎", accents: ["Heart Rate", "ECG", "SpO2", "Sleep"] },
@@ -21,6 +23,17 @@ const TODAY_READINGS = {
     activeMinutes: { icon: "fa-fire", label: "Active Minutes", value: 46, unit: "min", status: "Good", bars: [30, 40, 60, 75, 50, 80, 90] },
     calories: { icon: "fa-bolt", label: "Calories Burned", value: 532, unit: "kcal", status: "—", bars: [25, 45, 65, 70, 85, 60, 95] }
 };
+
+// Scripted live sensor simulation: normal → spike → critical dip → recovery
+const LIVE_SIM = [
+    { hr: 74, o2: 97 },
+    { hr: 88, o2: 96 },
+    { hr: 132, o2: 93 },
+    { hr: 158, o2: 88 },
+    { hr: 162, o2: 84 },
+    { hr: 90, o2: 95 },
+    { hr: 76, o2: 97 }
+];
 
 const STATUS_STYLES = {
     Normal: "bg-emerald-100 text-emerald-700",
@@ -104,6 +117,12 @@ const SmartWatch = () => {
     const [syncing, setSyncing] = useState(false);
     const [lastSync, setLastSync] = useState("Just now");
     const [watchAlert, setWatchAlert] = useState(null);
+    const [live, setLive] = useState({ hr: TODAY_READINGS.heartRate.value, o2: TODAY_READINGS.oxygen.value });
+    const [autoSos, setAutoSos] = useState(true);
+    const [countdown, setCountdown] = useState(null);
+    const countdownRef = useRef(null);
+    const armedRef = useRef(false);
+    const { t } = useLanguage();
     const profile = getStoredProfile();
 
     const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ") || "MedX Patient";
@@ -111,6 +130,70 @@ const SmartWatch = () => {
     const [myAlerts, setMyAlerts] = useState(() =>
         getEmergencyAlerts().filter((a) => a.patientName === fullName)
     );
+
+    // Live sensor simulation (only while a watch is connected)
+    useEffect(() => {
+        if (!connectedWatch || !autoSos) return;
+        let i = 0;
+        const id = setInterval(() => {
+            i = (i + 1) % LIVE_SIM.length;
+            setLive(LIVE_SIM[i]);
+        }, 6000);
+        return () => clearInterval(id);
+    }, [connectedWatch, autoSos]);
+
+    // Auto-SOS on critical vitals with cancel countdown
+    useEffect(() => {
+        const hr = live.hr;
+        const o2 = live.o2;
+        const critical = hr >= 150 || o2 < 90;
+        if (autoSos && connectedWatch && critical) {
+            if (!armedRef.current) {
+                armedRef.current = true;
+                setCountdown(5);
+                countdownRef.current = setInterval(() => {
+                    setCountdown((c) => {
+                        if (c <= 1) {
+                            dispatchSos(
+                                "Watch SOS — Auto Critical Detection",
+                                `Critical vitals detected: HR ${hr} bpm, SpO2 ${o2}%`,
+                                "Critical"
+                            );
+                            setCountdown(null);
+                            armedRef.current = false;
+                            if (countdownRef.current) clearInterval(countdownRef.current);
+                            countdownRef.current = null;
+                            return c;
+                        }
+                        return c - 1;
+                    });
+                }, 1000);
+            }
+        } else {
+            if (countdownRef.current) clearInterval(countdownRef.current);
+            countdownRef.current = null;
+            armedRef.current = false;
+            setCountdown(null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [live, autoSos, connectedWatch]);
+
+    useEffect(() => () => {
+        if (countdownRef.current) clearInterval(countdownRef.current);
+    }, []);
+
+    const cancelAutoSos = () => {
+        if (countdownRef.current) clearInterval(countdownRef.current);
+        countdownRef.current = null;
+        armedRef.current = false;
+        setCountdown(null);
+        setWatchAlert({
+            title: "Auto-SOS Cancelled",
+            body: "You are safe. Critical alert aborted.",
+            severity: "Warning"
+        });
+        setTimeout(() => setWatchAlert(null), 4000);
+    };
 
     const chronicList = (profile.chronicConditions || "")
         .split(/[,،\n]+/)
@@ -133,9 +216,7 @@ const SmartWatch = () => {
         }, 1000);
     };
 
-    const computeDanger = () => {
-        const hr = TODAY_READINGS.heartRate.value;
-        const o2 = TODAY_READINGS.oxygen.value;
+    const computeDanger = (hr = live.hr, o2 = live.o2) => {
         const temp = TODAY_READINGS.temperature.value;
         const [sys] = TODAY_READINGS.bloodPressure.value.split("/").map(Number);
 
@@ -149,32 +230,105 @@ const SmartWatch = () => {
         return { level: "Safe", reason: "All vitals within normal limits" };
     };
 
-    const triggerSos = (mode) => {
-        const danger = computeDanger();
-        const isSos = mode === "sos";
-
+    const dispatchSos = (type, reason, severity) => {
         addEmergencyAlert({
             patientName: fullName,
             address: alertAddress,
             phone: profile.phone || "",
             emergencyContact: profile.emergencyContact || "",
             bloodType: profile.bloodType || "Unknown",
-            type: isSos ? "Watch SOS — Panic Button" : "Watch SOS — Fall Detected",
-            icon: isSos ? "🆘" : "🩹",
-            severity: danger.level === "Safe" ? "High" : danger.level,
-            reason: danger.reason,
+            type,
+            icon: type.includes("Fall") ? "🩹" : "🆘",
+            severity,
+            reason: reason || "Patient signaled danger",
             watch: connectedWatch ? connectedWatch.name : "MedX Watch"
         });
 
         if (navigator.vibrate) navigator.vibrate([300, 100, 300]);
 
         setWatchAlert({
-            title: isSos ? "Panic SOS Sent" : "Fall Detected — SOS Sent",
+            title: type.includes("Fall") ? "Fall Detected — SOS Sent" : "Panic SOS Sent",
             body: `${fullName} signaled danger. Rescue Team notified with location, blood type & vitals.`,
-            severity: danger.level
+            severity
         });
         setMyAlerts(getEmergencyAlerts().filter((a) => a.patientName === fullName));
         setTimeout(() => setWatchAlert(null), 7000);
+    };
+
+    const triggerSos = (mode) => {
+        const danger = computeDanger();
+        const isSos = mode === "sos";
+        dispatchSos(
+            isSos ? "Watch SOS — Panic Button" : "Watch SOS — Fall Detected",
+            danger.reason,
+            danger.level === "Safe" ? "High" : danger.level
+        );
+    };
+
+    const exportPdf = () => {
+        const doc = new jsPDF();
+        const brand = [25, 167, 206];
+        const dark = [15, 23, 42];
+
+        doc.setFontSize(20);
+        doc.setTextColor(...brand);
+        doc.text("MedX Health Report", 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 29);
+
+        doc.setFontSize(12);
+        doc.setTextColor(...dark);
+        doc.text("Patient", 14, 40);
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        doc.text(`Name: ${fullName}   |   Blood type: ${profile.bloodType || "Unknown"}`, 14, 47);
+        doc.text(`Address: ${alertAddress}`, 14, 53);
+        doc.text(`Emergency contact: ${profile.emergencyContact || "Not set"}`, 14, 59);
+
+        doc.setFontSize(12);
+        doc.setTextColor(...dark);
+        let y = 70;
+        doc.text("Latest Readings", 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        Object.values(metrics).forEach((m) => {
+            doc.text(`${m.label}: ${m.value} ${m.unit}  (${m.status})`, 14, y);
+            y += 6;
+        });
+
+        y += 4;
+        doc.setFontSize(12);
+        doc.setTextColor(...dark);
+        doc.text("Watch-Detected Diagnoses", 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        DIAGNOSES.forEach((d) => {
+            const lines = doc.splitTextToSize(`${d.name} — ${d.detail}`, 180);
+            doc.text(lines, 14, y);
+            y += lines.length * 5 + 3;
+        });
+
+        y += 2;
+        doc.setFontSize(12);
+        doc.setTextColor(...dark);
+        doc.text("Tracked Diseases", 14, y);
+        y += 7;
+        doc.setFontSize(10);
+        doc.setTextColor(60);
+        diseases.forEach((d) => {
+            doc.text(`${d.name}  (${d.status})`, 14, y);
+            y += 6;
+        });
+
+        doc.setTextColor(130);
+        doc.setFontSize(8);
+        doc.text("This report is informational and not a medical diagnosis.", 14, y + 10);
+
+        doc.save("MedX-Health-Report.pdf");
     };
 
     const renderMetrics = () => {
@@ -209,7 +363,10 @@ const SmartWatch = () => {
     };
 
     const metrics = renderMetrics();
-    const danger = computeDanger();
+    const danger = computeDanger(
+        connectedWatch ? live.hr : TODAY_READINGS.heartRate.value,
+        connectedWatch ? live.o2 : TODAY_READINGS.oxygen.value
+    );
 
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-16">
@@ -248,15 +405,23 @@ const SmartWatch = () => {
                         <span className="bg-[#19A7CE]/20 text-[#19A7CE] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                             Wearables & Health Monitoring
                         </span>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold">Smart Watch Connection</h1>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold">{t("watch_title")}</h1>
                         <p className="text-sm text-slate-300">
                             {connectedWatch
-                                ? `Connected to ${connectedWatch.name} — live readings streaming`
-                                : "Connect your smart watch to stream your health readings, diagnoses, and tracked diseases"}
+                                ? t("watch_status_connected")
+                                : t("watch_status_disconnected")}
                         </p>
                     </div>
-                    <button
-                        onClick={handleSync}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                            onClick={exportPdf}
+                            className="px-5 py-3 rounded-xl font-bold text-sm transition-all shadow-md flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                        >
+                            <i className="fa-solid fa-file-pdf"></i>
+                            Export PDF
+                        </button>
+                        <button
+                            onClick={handleSync}
                         disabled={!connectedWatch || syncing}
                         className={`px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-md flex items-center gap-2 flex-shrink-0 ${
                             connectedWatch && !syncing
@@ -267,10 +432,11 @@ const SmartWatch = () => {
                         <i className={`fa-solid ${syncing ? "fa-rotate fa-spin" : "fa-arrows-rotate"}`}></i>
                         {syncing ? "Syncing…" : "Sync Now"}
                     </button>
+                    </div>
                 </div>
 
                 {/* Connect Devices */}
-                <SectionCard icon="fa-link" title="Connect Your Smart Watch" subtitle="Tap a device to pair — MedX reads heart rate, SpO2, blood pressure, sleep and more">
+                <SectionCard icon="fa-link" title={t("watch_connect")} subtitle="Tap a device to pair — MedX reads heart rate, SpO2, blood pressure, sleep and more">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                         {WATCHES.map((watch) => {
                             const isConnected = connectedWatch?.id === watch.id;
@@ -303,7 +469,7 @@ const SmartWatch = () => {
                 </SectionCard>
 
                 {/* Live Readings */}
-                <SectionCard icon="fa-chart-line" title="Your Readings" subtitle="Live streamed from your watch — select a range">
+                <SectionCard icon="fa-chart-line" title={t("watch_readings")} subtitle="Live streamed from your watch — select a range">
                     <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-5">
                         {["Today", "Week", "Month"].map((t) => (
                             <button
@@ -335,7 +501,7 @@ const SmartWatch = () => {
                 </SectionCard>
 
                 {/* Danger, SOS & Rescue */}
-                <SectionCard icon="fa-triangle-exclamation" title="Danger & SOS — Rescue Link" subtitle="Your watch sensors detect danger and alert the Rescue Team instantly" accent="from-red-600 to-rose-700">
+                <SectionCard icon="fa-triangle-exclamation" title={t("watch_danger")} subtitle="Your watch sensors detect danger and alert the Rescue Team instantly" accent="from-red-600 to-rose-700">
                     <div className="grid sm:grid-cols-3 gap-3 mb-5">
                         <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
                             <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 mb-1">Patient Profile</p>
@@ -360,9 +526,61 @@ const SmartWatch = () => {
                                 <i className={`fa-solid ${danger.level === "Safe" ? "fa-shield-heart" : danger.level === "Warning" ? "fa-circle-exclamation" : "fa-triangle-exclamation"}`}></i>
                                 {danger.level}
                             </span>
-                            <p className="text-[11px] text-slate-500 mt-2">{danger.reason}</p>
+                            <p className="text-[11px] text-slate-500 mt-2">
+                                {connectedWatch ? `HR ${live.hr} bpm · SpO2 ${live.o2}%` : danger.reason}
+                            </p>
                         </div>
                     </div>
+
+                    {/* Auto-SOS on critical vitals */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-[#19A7CE]/10 text-[#19A7CE] flex items-center justify-center text-lg">
+                                <i className="fa-solid fa-robot"></i>
+                            </div>
+                            <div>
+                                <p className="font-extrabold text-slate-900 text-sm">Auto-SOS on critical vitals</p>
+                                <p className="text-xs text-slate-500">
+                                    Fires rescue automatically when HR ≥ 150 or SpO2 &lt; 90, with a {countdown !== null ? countdown : 5}-second cancel window.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setAutoSos((prev) => !prev)}
+                            disabled={!connectedWatch}
+                            className={`relative w-12 h-7 flex items-center rounded-full transition-colors flex-shrink-0 ${
+                                autoSos && connectedWatch ? "bg-emerald-500" : "bg-slate-300"
+                            } ${!connectedWatch ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+                            title={connectedWatch ? (autoSos ? "Auto-SOS on" : "Auto-SOS off") : "Connect a watch first"}
+                        >
+                            <span className={`absolute w-5 h-5 bg-white rounded-full shadow transition-all ${autoSos && connectedWatch ? "left-[calc(100%-22px)]" : "left-1"}`}></span>
+                        </button>
+                    </div>
+
+                    {countdown !== null && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-red-600 text-white rounded-2xl px-5 py-4 mb-4 animate-pulse shadow-md">
+                            <div className="flex items-center gap-3">
+                                <i className="fa-solid fa-triangle-exclamation text-xl"></i>
+                                <div>
+                                    <p className="font-extrabold text-sm">Critical vitals detected — auto SOS incoming</p>
+                                    <p className="text-xs text-red-100">Rescue alert will be sent in {countdown} seconds. Cancel if you are safe.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={cancelAutoSos}
+                                className="bg-white text-red-600 font-bold text-xs px-4 py-2 rounded-xl hover:bg-red-50 transition-colors flex-shrink-0"
+                            >
+                                <i className="fa-solid fa-circle-xmark mr-1"></i> I'm Safe — Cancel
+                            </button>
+                        </div>
+                    )}
+
+                    {!connectedWatch && (
+                        <p className="text-[11px] text-slate-400 mb-4">
+                            <i className="fa-solid fa-circle-info mr-1 text-[#19A7CE]"></i>
+                            Connect a smart watch above to enable live sensor simulation and auto-SOS.
+                        </p>
+                    )}
 
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-red-50 to-rose-50 border border-red-100 rounded-2xl p-5">
                         <div className="flex items-center gap-3">

@@ -1,7 +1,29 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Cookies from "universal-cookie";
-import { getEmergencyAlerts, resolveEmergencyAlert, formatAlertTime } from "../../../services/apiService";
+import {
+    getEmergencyAlerts,
+    resolveEmergencyAlert,
+    formatAlertTime,
+    getVolunteers,
+    registerVolunteer,
+    getShifts,
+    saveShift,
+    DEFAULT_SHIFTS
+} from "../../../services/apiService";
+import { useLanguage } from "../../../Components/Context/LanguageContext";
+import RescueMap from "./RescueMap";
+
+// Coordinates for mock disaster sites (Cairo / Egypt)
+const SITE_COORDS = {
+    1: [30.0561, 31.2463],
+    2: [30.0621, 31.2175],
+    3: [30.0233, 31.2682],
+    4: [27.2579, 33.8116],
+    5: [24.0889, 32.8998],
+    6: [30.0487, 31.3303],
+    7: [30.0783, 31.2141]
+};
 
 // Mock disaster data (Disaster places shown to rescue volunteers)
 const MOCK_DISASTER_SITES = [
@@ -229,8 +251,15 @@ const RescueVolunteersDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [demoMode, setDemoMode] = useState(false);
+    const [volunteers, setVolunteers] = useState(getVolunteers());
+    const [shifts, setShifts] = useState(getShifts());
+    const [volForm, setVolForm] = useState({ name: "", phone: "", skills: [], availability: "Flexible", emergency: "" });
+    const [volSuccess, setVolSuccess] = useState(false);
     const cookie = new Cookies();
     const token = cookie.get("Bearer");
+    const { t } = useLanguage();
+
+    const SKILLS = ["First Aid", "CPR", "Search & Rescue", "Medical", "Logistics", "Driving"];
 
     const mergeWithAlerts = (base) => {
         const watchSites = getEmergencyAlerts().map((a) => ({
@@ -245,9 +274,40 @@ const RescueVolunteersDashboard = () => {
             status: a.status,
             volunteers: a.volunteers || 0,
             reported: formatAlertTime(a.createdAt),
-            reason: a.reason
+            reason: a.reason,
+            lat: 30.0444 + (a.id % 7) * 0.012,
+            lng: 31.2357 - (a.id % 5) * 0.012
         }));
         return [...watchSites, ...base];
+    };
+
+    const withCoords = (mock) =>
+        mock.map((s) => ({
+            ...s,
+            lat: SITE_COORDS[s.id] ? SITE_COORDS[s.id][0] : 30.0444,
+            lng: SITE_COORDS[s.id] ? SITE_COORDS[s.id][1] : 31.2357
+        }));
+
+    const toggleSkill = (skill) =>
+        setVolForm((prev) => ({
+            ...prev,
+            skills: prev.skills.includes(skill)
+                ? prev.skills.filter((s) => s !== skill)
+                : [...prev.skills, skill]
+        }));
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        registerVolunteer(volForm);
+        setVolunteers(getVolunteers());
+        setVolSuccess(true);
+        setVolForm({ name: "", phone: "", skills: [], availability: "Flexible", emergency: "" });
+        setTimeout(() => setVolSuccess(false), 3000);
+    };
+
+    const handleAcceptShift = (shift) => {
+        saveShift(shift);
+        setShifts(getShifts());
     };
 
     useEffect(() => {
@@ -267,7 +327,7 @@ const RescueVolunteersDashboard = () => {
             } catch (err) {
                 console.warn("Backend rescue API unavailable, showing demo data:", err.message);
                 setDemoMode(true);
-                setSites(mergeWithAlerts(MOCK_DISASTER_SITES));
+                setSites(mergeWithAlerts(withCoords(MOCK_DISASTER_SITES)));
             } finally {
                 setLoading(false);
             }
@@ -353,10 +413,10 @@ const RescueVolunteersDashboard = () => {
                 <div className="bg-gradient-to-r from-red-600 to-rose-700 px-6 py-6 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
                     <div>
                         <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                            <i className="fa-solid fa-flag"></i> Rescue Volunteers
+                            <i className="fa-solid fa-flag"></i> {t("rescue_title")}
                         </h2>
                         <p className="text-rose-100 text-sm mt-1">
-                            Live disaster places in need of response — deploy to the nearest site
+                            {t("rescue_subtitle")}
                         </p>
                     </div>
                     <span className="inline-flex items-center gap-2 bg-white/15 text-white px-4 py-2 rounded-xl text-sm font-semibold">
@@ -421,6 +481,21 @@ const RescueVolunteersDashboard = () => {
                         <span className="font-semibold">Demo mode:</span> backend not reachable — showing sample disaster data.
                     </div>
                 )}
+
+                {/* Live Rescue Map */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-slate-900 to-cyan-950 px-6 py-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <i className="fa-solid fa-map-location-dot"></i> {t("rescue_map")}
+                        </h2>
+                        <p className="text-cyan-100 text-sm mt-1">
+                            Live disaster places and watch SOS signals — red circles are critical
+                        </p>
+                    </div>
+                    <div className="p-4">
+                        <RescueMap sites={sites} />
+                    </div>
+                </div>
 
                 {/* Disaster Places Table */}
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
@@ -570,6 +645,170 @@ const RescueVolunteersDashboard = () => {
                                 </p>
                             </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Become a Volunteer */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <i className="fa-solid fa-handshake-angle"></i> {t("rescue_volunteer_signup")}
+                        </h2>
+                        <p className="text-emerald-100 text-sm mt-1">
+                            Join the on-call team — deploy to disaster places and take rescue shifts
+                        </p>
+                    </div>
+                    <div className="grid lg:grid-cols-2 gap-6 p-6">
+                        <form onSubmit={handleRegister} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <label className="block">
+                                    <span className="text-xs font-bold text-slate-600 mb-1 block">Full Name</span>
+                                    <input
+                                        type="text"
+                                        value={volForm.name}
+                                        onChange={(e) => setVolForm({ ...volForm, name: e.target.value })}
+                                        required
+                                        placeholder="Ahmed Mohamed"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-xs font-bold text-slate-600 mb-1 block">Phone Number</span>
+                                    <input
+                                        type="tel"
+                                        value={volForm.phone}
+                                        onChange={(e) => setVolForm({ ...volForm, phone: e.target.value })}
+                                        required
+                                        placeholder="+20 100 000 0000"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-xs font-bold text-slate-600 mb-1 block">Emergency Contact</span>
+                                    <input
+                                        type="tel"
+                                        value={volForm.emergency}
+                                        onChange={(e) => setVolForm({ ...volForm, emergency: e.target.value })}
+                                        placeholder="Next of kin phone"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-xs font-bold text-slate-600 mb-1 block">Availability</span>
+                                    <select
+                                        value={volForm.availability}
+                                        onChange={(e) => setVolForm({ ...volForm, availability: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 transition"
+                                    >
+                                        {["Flexible", "Daytime", "Night", "Weekends Only"].map((o) => (
+                                            <option key={o} value={o}>{o}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-slate-600 mb-2">Skills</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {SKILLS.map((skill) => (
+                                        <button
+                                            key={skill}
+                                            type="button"
+                                            onClick={() => toggleSkill(skill)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                                                volForm.skills.includes(skill)
+                                                    ? "bg-emerald-600 text-white"
+                                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                            }`}
+                                        >
+                                            {skill}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-colors shadow-md flex items-center gap-2 justify-center"
+                            >
+                                <i className="fa-solid fa-user-plus"></i>
+                                {volSuccess ? "Registered!" : "Register as Volunteer"}
+                            </button>
+                        </form>
+
+                        <div>
+                            <p className="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+                                <i className="fa-solid fa-users text-emerald-600"></i> Active volunteers ({volunteers.length})
+                            </p>
+                            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                {volunteers.length === 0 ? (
+                                    <p className="text-sm text-slate-400 text-center py-8 border border-dashed border-slate-200 rounded-2xl">
+                                        No volunteers yet — be the first to join.
+                                    </p>
+                                ) : (
+                                    volunteers.map((v) => (
+                                        <div key={v.id} className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                                    {(v.name || "V").charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-bold text-slate-800 truncate">{v.name}</p>
+                                                    <p className="text-[11px] text-slate-500">{v.skills?.length ? v.skills.join(", ") : "General"} · {v.availability}</p>
+                                                </div>
+                                            </div>
+                                            <span className="text-[10px] text-slate-400 whitespace-nowrap flex-shrink-0">{v.phone}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Rescue Shifts */}
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-gradient-to-r from-indigo-600 to-violet-700 px-6 py-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                            <i className="fa-solid fa-calendar-check"></i> {t("rescue_shifts")}
+                        </h2>
+                        <p className="text-indigo-100 text-sm mt-1">
+                            Available field rotations — accept a shift to join the crew
+                        </p>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+                        {DEFAULT_SHIFTS.map((shift) => {
+                            const taken = shifts.some((s) => s.id === shift.id);
+                            return (
+                                <div key={shift.id} className="border border-slate-100 rounded-2xl p-4 hover:shadow-sm transition flex flex-col">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-xl flex items-center justify-center">
+                                            {shift.icon}
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-900 font-bold text-sm">{shift.title}</p>
+                                            <p className="text-[11px] text-slate-500">{shift.zone}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                                        <i className="fa-solid fa-clock text-xs"></i>{shift.time}
+                                    </p>
+                                    <div className="mt-3 flex items-center justify-between">
+                                        <span className="text-[11px] text-slate-400 font-semibold">{shift.spots} spots open</span>
+                                        {taken ? (
+                                            <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                                                <i className="fa-solid fa-circle-check"></i> You're in
+                                            </span>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleAcceptShift(shift)}
+                                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors"
+                                            >
+                                                <i className="fa-solid fa-calendar-plus mr-1"></i> Accept Shift
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 
