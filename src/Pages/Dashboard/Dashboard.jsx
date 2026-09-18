@@ -118,6 +118,13 @@ export default function Dashboard() {
                   <span className="font-bold text-xs text-slate-800 block">Ask AI</span>
                 </Link>
 
+                <Link to="/profile" className="p-4 bg-white hover:bg-sky-50/50 border border-slate-200 rounded-2xl text-center space-y-2 transition shadow-sm group">
+                  <div className="w-10 h-10 bg-sky-100 text-sky-600 rounded-xl flex items-center justify-center mx-auto text-lg group-hover:scale-110 transition-transform">
+                    <i className="fa-solid fa-user"></i>
+                  </div>
+                  <span className="font-bold text-xs text-slate-800 block">My Profile</span>
+                </Link>
+
                 <Link to="/doctors" className="p-4 bg-white hover:bg-emerald-50/50 border border-slate-200 rounded-2xl text-center space-y-2 transition shadow-sm group">
                   <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center mx-auto text-lg group-hover:scale-110 transition-transform">
                     <i className="fa-solid fa-user-doctor"></i>
