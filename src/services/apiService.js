@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   CART: 'seta_cart',
   RECENT_AI_CHAT: 'seta_recent_ai_chat',
   LAB_REPORTS: 'seta_lab_reports',
+  PROFILE: 'seta_profile',
 };
 
 // Initial Mock Doctors Data
@@ -317,6 +318,36 @@ export const MOCK_RADIOLOGY = [
   }
 ];
 
+// Full Laboratory Directory (used by the Laboratories listing & details pages)
+export const MOCK_LABORATORIES = [
+  { id: 1, name: "Al-Mokhtabar Laboratory", nameAr: "معامل المختبر", icon: "🔬", image: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=500", location: "Downtown, Cairo", locationAr: "وسط البلد، القاهرة", rating: 4.8, reviews: 245, specialties: ["Blood Tests", "Hormones", "PCR"], openTime: "8:00 AM", closeTime: "10:00 PM", emergency: true },
+  { id: 2, name: "Alpha Laboratory", nameAr: "معامل ألفا", icon: "🧬", image: "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=500", location: "Nasr City, Cairo", locationAr: "مدينة نصر، القاهرة", rating: 4.9, reviews: 312, specialties: ["Genetics", "Pathology", "Microbiology"], openTime: "7:00 AM", closeTime: "11:00 PM", emergency: true },
+  { id: 3, name: "Beta Medical Lab", nameAr: "معامل بيتا الطبية", icon: "🧪", image: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=500", location: "Heliopolis, Cairo", locationAr: "مصر الجديدة، القاهرة", rating: 4.7, reviews: 198, specialties: ["Clinical Chemistry", "Immunology", "Serology"], openTime: "8:30 AM", closeTime: "9:00 PM", emergency: false },
+  { id: 4, name: "Gamma Diagnostics", nameAr: "معامل جاما للتشخيص", icon: "💉", image: "https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=500", location: "Maadi, Cairo", locationAr: "المعادي، القاهرة", rating: 4.6, reviews: 167, specialties: ["Hematology", "Coagulation", "Tumor Markers"], openTime: "9:00 AM", closeTime: "8:00 PM", emergency: false },
+  { id: 5, name: "Delta Medical Laboratory", nameAr: "معامل دلتا الطبية", icon: "🩸", image: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=500", location: "6th October City", locationAr: "مدينة 6 أكتوبر", rating: 4.8, reviews: 221, specialties: ["Diabetes", "Thyroid", "Vitamins"], openTime: "7:30 AM", closeTime: "10:30 PM", emergency: true },
+  { id: 6, name: "Omega Lab Center", nameAr: "مركز أوميجا للتحاليل", icon: "🦠", image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=500", location: "Zamalek, Cairo", locationAr: "الزمالك، القاهرة", rating: 4.9, reviews: 289, specialties: ["Molecular Biology", "Genetics", "Advanced Diagnostics"], openTime: "8:00 AM", closeTime: "11:00 PM", emergency: true },
+  { id: 7, name: "Sigma Laboratory", nameAr: "معامل سيجما", icon: "🔬", image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=500", location: "Mohandessin, Giza", locationAr: "المهندسين، الجيزة", rating: 4.7, reviews: 203, specialties: ["Complete Blood Count", "Liver Function", "Kidney Function"], openTime: "8:00 AM", closeTime: "9:30 PM", emergency: false },
+  { id: 8, name: "Zeta Diagnostic Center", nameAr: "مركز زيتا للتشخيص", icon: "🧫", image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?w=500", location: "New Cairo", locationAr: "القاهرة الجديدة", rating: 4.8, reviews: 256, specialties: ["Allergy Testing", "Autoimmune", "Infectious Diseases"], openTime: "7:00 AM", closeTime: "10:00 PM", emergency: true },
+];
+
+// Full Radiology Directory (used by the Radiologies listing & details pages)
+export const MOCK_RADIOLOGY_CENTERS = [
+  { id: 1, name: "Advanced Imaging Center", nameAr: "مركز التصوير المتقدم", icon: "📡", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=500", location: "Downtown, Cairo", locationAr: "وسط البلد، القاهرة", rating: 4.9, reviews: 328, specialties: ["MRI", "CT Scan", "Ultrasound"], openTime: "24 Hours", closeTime: "", emergency: true },
+  { id: 2, name: "Scan Diagnostic Center", nameAr: "مركز سكان للتشخيص", icon: "🔬", image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=500", location: "Nasr City, Cairo", locationAr: "مدينة نصر، القاهرة", rating: 4.8, reviews: 289, specialties: ["X-Ray", "Mammography", "Bone Density"], openTime: "8:00 AM", closeTime: "11:00 PM", emergency: true },
+  { id: 3, name: "Digital Radiologies Hub", nameAr: "مركز الأشعة الرقمية", icon: "💻", image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=500", location: "Heliopolis, Cairo", locationAr: "مصر الجديدة، القاهرة", rating: 4.7, reviews: 245, specialties: ["Digital X-Ray", "Fluoroscopy", "Angiography"], openTime: "7:00 AM", closeTime: "10:00 PM", emergency: false },
+  { id: 4, name: "Elite Diagnostic Imaging", nameAr: "النخبة للتصوير التشخيصي", icon: "🏥", image: "https://images.unsplash.com/photo-1581595220892-b0739db3ba8c?w=500", location: "Maadi, Cairo", locationAr: "المعادي، القاهرة", rating: 4.9, reviews: 412, specialties: ["PET Scan", "Nuclear Medicine", "3D Imaging"], openTime: "6:00 AM", closeTime: "12:00 AM", emergency: true },
+  { id: 5, name: "Crystal Clear Radiologies", nameAr: "كريستال للأشعة", icon: "💎", image: "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?w=500", location: "6th October City", locationAr: "مدينة 6 أكتوبر", rating: 4.6, reviews: 198, specialties: ["Cardiac CT", "Dental X-Ray", "Chest X-Ray"], openTime: "8:30 AM", closeTime: "9:00 PM", emergency: false },
+  { id: 6, name: "Precision Scan Center", nameAr: "مركز بريسيجن للأشعة", icon: "🎯", image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=500", location: "Zamalek, Cairo", locationAr: "الزمالك، القاهرة", rating: 4.8, reviews: 356, specialties: ["Brain MRI", "Spine Imaging", "Joint Scan"], openTime: "24 Hours", closeTime: "", emergency: true },
+  { id: 7, name: "Metro Imaging Solutions", nameAr: "ميترو للتصوير الطبي", icon: "🚇", image: "https://images.unsplash.com/photo-1581093804475-577d72e38aa0?w=500", location: "Mohandessin, Giza", locationAr: "المهندسين، الجيزة", rating: 4.7, reviews: 267, specialties: ["Abdominal Ultrasound", "Pelvic Scan", "Doppler"], openTime: "7:30 AM", closeTime: "10:30 PM", emergency: false },
+  { id: 8, name: "Vision Radiologies Center", nameAr: "مركز فيجن للأشعة", icon: "👁️", image: "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=500", location: "New Cairo", locationAr: "القاهرة الجديدة", rating: 4.9, reviews: 389, specialties: ["4D Ultrasound", "Prenatal Imaging", "Women's Health"], openTime: "8:00 AM", closeTime: "11:00 PM", emergency: true },
+];
+
+export const getLaboratoryById = (id) =>
+  MOCK_LABORATORIES.find((lab) => String(lab.id) === String(id)) || null;
+
+export const getRadiologyById = (id) =>
+  MOCK_RADIOLOGY_CENTERS.find((center) => String(center.id) === String(id)) || null;
+
 // Mock Digital Prescriptions Data
 export const MOCK_PRESCRIPTIONS = [
   {
@@ -350,27 +381,35 @@ export const MOCK_PRESCRIPTIONS = [
 ];
 
 // Helper Functions for Local Storage Management
-export const getStoredAppointments = () => {
+const readJSON = (key, fallback) => {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
-    return data ? JSON.parse(data) : [
-      {
-        id: "APT-101",
-        doctor_id: 1,
-        doctor_name: "Dr. Sarah Al-Mansoor",
-        specialty: "Cardiology",
-        date: "2026-08-18",
-        time: "10:00 AM",
-        type: "Online Consultation",
-        status: "Confirmed",
-        fee: 250,
-        patient_name: "John Doe",
-        notes: "Routine cardiac checkup following blood pressure readings."
-      }
-    ];
-  } catch (e) {
-    return [];
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : fallback;
+  } catch {
+    return fallback;
   }
+};
+
+const DEFAULT_APPOINTMENT = {
+  id: "APT-101",
+  doctor_id: 1,
+  doctor_name: "Dr. Sarah Al-Mansoor",
+  specialty: "Cardiology",
+  date: "2026-08-18",
+  time: "10:00 AM",
+  type: "Online Consultation",
+  status: "Confirmed",
+  fee: 250,
+  patient_name: "John Doe",
+  notes: "Routine cardiac checkup following blood pressure readings."
+};
+
+export const getStoredAppointments = () => {
+  const modern = readJSON(STORAGE_KEYS.APPOINTMENTS, null);
+  if (modern && modern.length) return modern;
+  const legacy = readJSON("medx_appointments", []);
+  if (legacy.length) return legacy;
+  return [DEFAULT_APPOINTMENT];
 };
 
 export const saveAppointment = (appointment) => {
@@ -381,12 +420,11 @@ export const saveAppointment = (appointment) => {
 };
 
 export const getStoredPrescriptions = () => {
-  try {
-    const data = localStorage.getItem(STORAGE_KEYS.PRESCRIPTIONS);
-    return data ? JSON.parse(data) : MOCK_PRESCRIPTIONS;
-  } catch (e) {
-    return MOCK_PRESCRIPTIONS;
-  }
+  const modern = readJSON(STORAGE_KEYS.PRESCRIPTIONS, null);
+  if (modern && modern.length) return modern;
+  const legacy = readJSON("medx_prescriptions", []);
+  if (legacy.length) return legacy;
+  return MOCK_PRESCRIPTIONS;
 };
 
 export const savePrescription = (rx) => {
@@ -394,4 +432,25 @@ export const savePrescription = (rx) => {
   const updated = [rx, ...current];
   localStorage.setItem(STORAGE_KEYS.PRESCRIPTIONS, JSON.stringify(updated));
   return updated;
+};
+
+export const getStoredProfile = () =>
+  readJSON(STORAGE_KEYS.PROFILE, {
+    firstName: "",
+    lastName: "",
+    phone: "",
+    dateOfBirth: "",
+    gender: "",
+    bloodType: "",
+    emergencyContact: "",
+    address: "",
+    height: "",
+    weight: "",
+    allergies: "",
+    chronicConditions: "",
+  });
+
+export const saveProfile = (profile) => {
+  localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+  return profile;
 };

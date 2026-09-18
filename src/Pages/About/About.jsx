@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import aboutLandingfrom "../../assets/Services/medical-banner-with-doctor-wearing-face-mask.jpg"; // Update with your image path
+import aboutLanding from "../../assets/Services/medical-banner-with-doctor-wearing-face-mask.jpg";
 
 const About = () => {
   const stats = [
@@ -139,10 +139,7 @@ const About = () => {
           </div>
           <div className="relative">
             <div className="aspect-square bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl shadow-2xl overflow-hidden">
-              {/* Replace with actual image */}
-              <div className="w-full h-full flex items-center justify-center text-8xl">
-                🏥
-              </div>
+              <img src={aboutLanding} alt="About MedX Healthcare" className="w-full h-full object-cover" />
             </div>
             <div className="absolute -bottom-6 -right-6 w-48 h-48 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl -z-10"></div>
           </div>

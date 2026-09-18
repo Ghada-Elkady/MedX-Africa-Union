@@ -25,6 +25,13 @@ import Services from "./Pages/Services/Services";
 import Pharmacies from "./Pages/Services/Pharmacies/Pharmacies";
 import PharmacyDetails from "./Pages/Services/Pharmacies/PharmacyDetails";
 import About from "./Pages/About/About";
+import Laboratories from "./Pages/Services/Laboratory/Laboratories";
+import LaboratoryDetails from "./Pages/Services/Laboratory/LaboratoryDetails";
+import Radiologies from "./Pages/Services/Radiologies/Radiologies";
+import RadiologyDetails from "./Pages/Services/Radiologies/RadiologyDetails";
+import PatientProfile from "./Pages/Profile/PatientProfile";
+import Terms from "./Pages/Legal/Terms";
+import Privacy from "./Pages/Legal/Privacy";
 
 // New Feature Imports
 import ConsultationRoom from "./Pages/Consultation/ConsultationRoom";
@@ -45,6 +52,9 @@ const AppRoutes = () => {
         <Route path="/report-explainer" element={<ReportExplainer />} />
         <Route path="/ask" element={<AskAI />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/profile" element={<PatientProfile />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<Dashboard />}>
@@ -66,6 +76,10 @@ const AppRoutes = () => {
       <Route path="/services/search/radiologies" element={<Services />} />
       <Route path="/services/search/pharmacies" element={<Pharmacies />} />
       <Route path="/pharmacies/:id" element={<PharmacyDetails />} />
+      <Route path="/laboratories" element={<Laboratories />} />
+      <Route path="/laboratories/:id" element={<LaboratoryDetails />} />
+      <Route path="/radiologies" element={<Radiologies />} />
+      <Route path="/radiologies/:id" element={<RadiologyDetails />} />
 
       <Route path="/about/search/team" element={<DeveloperTeam />} />
       <Route path="/about" element={<About />} />

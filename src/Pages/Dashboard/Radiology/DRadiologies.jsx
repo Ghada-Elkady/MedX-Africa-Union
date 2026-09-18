@@ -1,32 +1,14 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { MOCK_RADIOLOGY_CENTERS } from "../../../services/apiService";
 
 // Mock data for demonstration
-const mockRadiology = [
-  {
-    _id: "1",
-    id: 301,
-    name: "Alpha Medical Lab",
-    address: "Cairo, Nasr City",
-  },
-  {
-    _id: "2",
-    id: 302,
-    name: "BioCheck Laboratory",
-    address: "Alexandria, Sidi Gaber",
-  },
-  {
-    _id: "3",
-    id: 303,
-    name: "Health Scan Lab",
-    address: "Giza, Mohandessin",
-  },
-  {
-    _id: "4",
-    id: 304,
-    name: "Smart Lab Center",
-    address: "Mansoura, Downtown",
-  },
-];
+const mockRadiology = MOCK_RADIOLOGY_CENTERS.map((c, index) => ({
+  _id: String(index + 1),
+  id: c.id,
+  name: c.name,
+  address: c.location,
+}));
 
 const RadiologiesDashboard = () => {
   const [labs, setLabs] = useState([]);
@@ -104,13 +86,24 @@ const RadiologiesDashboard = () => {
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
-            <h2 className="text-2xl font-bold text-white">
-              Radiologies Management
-            </h2>
-            <p className="text-green-100 text-sm mt-1">
-              Manage and view all registered Radiologies
-            </p>
+          <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">
+                Radiologies Management
+              </h2>
+              <p className="text-green-100 text-sm mt-1">
+                Manage and view all registered Radiologies
+              </p>
+            </div>
+            <Link
+              to="/dashboard/add-radiology"
+              className="inline-flex items-center gap-2 bg-white text-cyan-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-cyan-50 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Radiology
+            </Link>
           </div>
           {/* Table Header */}
           <div className="grid grid-cols-3 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200 font-semibold text-gray-700 text-sm">

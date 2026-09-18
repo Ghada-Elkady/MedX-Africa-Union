@@ -114,7 +114,7 @@ const Header = () => {
                                         }`}
                                     >
                                         <div className="flex items-center gap-2">
-                                            {link.isAi && <i className="fa-solid fa-[#19A7CE] fa-wand-magic-sparkles"></i>}
+                                            {link.isAi && <i className="fa-solid fa-wand-magic-sparkles"></i>}
                                             <span>{link.label}</span>
                                         </div>
                                         {link.sections && <i className="fas fa-chevron-down text-xs text-slate-400 group-hover:rotate-180 transition-transform"></i>}

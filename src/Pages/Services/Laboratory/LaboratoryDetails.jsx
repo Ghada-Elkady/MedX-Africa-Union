@@ -1,100 +1,76 @@
 import { useParams, Link } from "react-router-dom";
-// import "../PagesStyle.css";
+import { getLaboratoryById } from "../../../services/apiService";
+
+const EXTRA = {
+  phone: "+20 123 456 7890",
+  email: "info@medx-labs.com",
+  website: "www.medx-labs.com",
+  workingDays: "Saturday - Thursday",
+  workingDaysAr: "السبت - الخميس",
+  description:
+    "This MedX partner laboratory provides comprehensive diagnostic services with state-of-the-art equipment and highly qualified staff. Same-day sample collection and online results are available.",
+  descriptionAr:
+    "هذا المعمل الشريك في شبكة ميديكس يوفر خدمات تشخيصية شاملة بأحدث المعدات وطاقم عمل مؤهل تأهيلاً عالياً مع نتائج أونلاين.",
+  services: [
+    { name: "Complete Blood Count", nameAr: "صورة دم كاملة", price: "150 EGP", duration: "24 hours" },
+    { name: "Blood Sugar", nameAr: "سكر الدم", price: "80 EGP", duration: "Same day" },
+    { name: "Lipid Profile", nameAr: "دهون الدم", price: "250 EGP", duration: "24 hours" },
+    { name: "Thyroid Function", nameAr: "وظائف الغدة الدرقية", price: "350 EGP", duration: "48 hours" },
+    { name: "Liver Function", nameAr: "وظائف الكبد", price: "280 EGP", duration: "24 hours" },
+    { name: "Kidney Function", nameAr: "وظائف الكلى", price: "300 EGP", duration: "24 hours" },
+    { name: "Vitamin D", nameAr: "فيتامين د", price: "300 EGP", duration: "48 hours" },
+    { name: "PCR COVID-19", nameAr: "فحص كورونا", price: "600 EGP", duration: "24 hours" },
+  ],
+  facilities: [
+    { icon: "🅿️", name: "Free Parking", nameAr: "موقف مجاني" },
+    { icon: "♿", name: "Wheelchair Access", nameAr: "دخول للكراسي المتحركة" },
+    { icon: "🏥", name: "Waiting Area", nameAr: "صالة انتظار" },
+    { icon: "💳", name: "Card Payment", nameAr: "دفع بالبطاقة" },
+    { icon: "🚑", name: "Emergency Services", nameAr: "خدمات طوارئ" },
+    { icon: "📱", name: "Online Results", nameAr: "نتائج أونلاين" },
+  ],
+  gallery: [
+    "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400",
+    "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400",
+    "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=400",
+    "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400",
+  ],
+};
 
 const LaboratoryDetails = () => {
   const { id } = useParams();
+  const base = getLaboratoryById(id);
 
-  // في الواقع، ستجلب البيانات من API حسب الـ id
+  if (!base) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-32 pb-20 flex items-center justify-center">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-12 text-center max-w-md">
+          <i className="fa-solid fa-microscope text-5xl text-slate-300 mb-4"></i>
+          <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Laboratory Not Found</h1>
+          <p className="text-sm text-slate-500 mb-6">The laboratory you are looking for does not exist.</p>
+          <Link to="/laboratories" className="inline-flex items-center gap-2 bg-[#19A7CE] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#148AA1] transition-colors">
+            <i className="fa-solid fa-arrow-left"></i>
+            Back to Laboratories
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const laboratory = {
-    id: 1,
-    name: "Al-Mokhtabar Laboratory",
-    nameAr: "معامل المختبر",
-    icon: "🔬",
-    image: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800",
-    location: "123 Main Street, Downtown, Cairo",
-    locationAr: "123 شارع رئيسي، وسط البلد، القاهرة",
-    rating: 4.8,
-    reviews: 245,
-    phone: "+20 123 456 7890",
-    email: "info@almokhtabar.com",
-    website: "www.almokhtabar.com",
-    openTime: "8:00 AM",
-    closeTime: "10:00 PM",
-    workingDays: "Saturday - Thursday",
-    workingDaysAr: "السبت - الخميس",
-    emergency: true,
-    description:
-      "Al-Mokhtabar Laboratory is one of the leading medical laboratories in Egypt, providing comprehensive diagnostic services with state-of-the-art equipment and highly qualified staff.",
-    descriptionAr:
-      "معامل المختبر هي واحدة من المعامل الطبية الرائدة في مصر، توفر خدمات تشخيصية شاملة بأحدث المعدات وطاقم عمل مؤهل تأهيلاً عالياً.",
-    services: [
-      {
-        name: "Complete Blood Count",
-        nameAr: "صورة دم كاملة",
-        price: "150 EGP",
-        duration: "24 hours",
-      },
-      {
-        name: "Blood Sugar",
-        nameAr: "سكر الدم",
-        price: "80 EGP",
-        duration: "Same day",
-      },
-      {
-        name: "Lipid Profile",
-        nameAr: "دهون الدم",
-        price: "250 EGP",
-        duration: "24 hours",
-      },
-      {
-        name: "Thyroid Function",
-        nameAr: "وظائف الغدة الدرقية",
-        price: "350 EGP",
-        duration: "48 hours",
-      },
-      {
-        name: "Liver Function",
-        nameAr: "وظائف الكبد",
-        price: "280 EGP",
-        duration: "24 hours",
-      },
-      {
-        name: "Kidney Function",
-        nameAr: "وظائف الكلى",
-        price: "300 EGP",
-        duration: "24 hours",
-      },
-      {
-        name: "Vitamin D",
-        nameAr: "فيتامين د",
-        price: "300 EGP",
-        duration: "48 hours",
-      },
-      {
-        name: "PCR COVID-19",
-        nameAr: "فحص كورونا",
-        price: "600 EGP",
-        duration: "24 hours",
-      },
-    ],
-    facilities: [
-      { icon: "🅿️", name: "Free Parking", nameAr: "موقف مجاني" },
-      {
-        icon: "♿",
-        name: "Wheelchair Access",
-        nameAr: "دخول للكراسي المتحركة",
-      },
-      { icon: "🏥", name: "Waiting Area", nameAr: "صالة انتظار" },
-      { icon: "💳", name: "Card Payment", nameAr: "دفع بالبطاقة" },
-      { icon: "🚑", name: "Emergency Services", nameAr: "خدمات طوارئ" },
-      { icon: "📱", name: "Online Results", nameAr: "نتائج أونلاين" },
-    ],
-    gallery: [
-      "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=400",
-      "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=400",
-      "https://images.unsplash.com/photo-1581093588401-fbb62a02f120?w=400",
-      "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=400",
-    ],
+    id: base.id,
+    name: base.name,
+    nameAr: base.nameAr,
+    icon: base.icon,
+    image: base.image.replace("w=500", "w=800"),
+    location: base.location,
+    locationAr: base.locationAr,
+    rating: base.rating,
+    reviews: base.reviews,
+    openTime: base.openTime,
+    closeTime: base.closeTime,
+    emergency: base.emergency,
+    ...EXTRA,
   };
 
   return (
@@ -113,7 +89,7 @@ const LaboratoryDetails = () => {
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="container mx-auto">
             <Link
-              to="/services/search/laboratories"
+              to="/laboratories"
               className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-4 transition-colors">
               <i className="fa-solid fa-arrow-left"></i>
               Back to Laboratories

@@ -1,11 +1,14 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Cookies from "universal-cookie";
+import { MOCK_DOCTORS } from "../../../services/apiService";
 
 const DoctorsDashboard = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [demoMode, setDemoMode] = useState(false);
 const cookie = new Cookies();
   const token = cookie.get("Bearer");
 
@@ -20,24 +23,25 @@ const cookie = new Cookies();
             'Authorization': `Bearer ${token}`
           }
         });
-        const res = await axios.get("http://127.0.0.1:8000/api/doctors/", {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        console.log(res);
-        console.log(response.data);
         setDoctors(response.data.filter((doctor) => doctor.is_active !== false));
       } catch (err) {
-        console.error(err);
-        setError("Failed to load doctors. Please try again.");
+        console.warn("Backend admin API unavailable, showing demo data:", err.message);
+        setDemoMode(true);
+        setDoctors(MOCK_DOCTORS.map((d) => ({
+          id: d.id,
+          first_name: d.name,
+          last_name: "",
+          address: d.address || d.location,
+          specialization: d.specialty,
+          is_active: true
+        })));
       } finally {
         setLoading(false);
       }
     };
 
     fetchDoctors();
-  }, []);
+  }, [token]);
 
   const handleDelete = async (id) => {
     const confirmed = window.confirm(
@@ -45,6 +49,12 @@ const cookie = new Cookies();
     );
 
     if (!confirmed) return;
+
+    if (demoMode) {
+      setDoctors(doctors.filter((doctor) => doctor.id !== id));
+      setError(null);
+      return;
+    }
 
     try {
       const response = await axios.delete(
@@ -103,10 +113,27 @@ const cookie = new Cookies();
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-            <h2 className="text-2xl font-bold text-white">Doctors Management</h2>
-            <p className="text-blue-100 text-sm mt-1">Manage and view all registered doctors</p>
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Doctors Management</h2>
+              <p className="text-blue-100 text-sm mt-1">Manage and view all registered doctors</p>
+            </div>
+            <Link
+              to="/dashboard/add-doctor"
+              className="inline-flex items-center gap-2 bg-white text-blue-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Doctor
+            </Link>
           </div>
+
+          {demoMode && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-amber-800 text-sm">
+              <span className="font-semibold">Demo mode:</span> backend not reachable — showing sample data. Your changes are saved locally only.
+            </div>
+          )}
 
           {/* Table Header */}
           <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200 font-semibold text-gray-700 text-sm">
@@ -128,7 +155,7 @@ const cookie = new Cookies();
               </div>
             ) : (
                 doctors.map((doctor) => (
-                  <>
+                  <Fragment key={doctor.id}>
                     {doctor.is_active ? (
                       <div
                         key={doctor.id}
@@ -210,7 +237,7 @@ const cookie = new Cookies();
                         </div>
                       </div>
                     )}
-                  </>
+                  </Fragment>
               ))
             )}
           </div>

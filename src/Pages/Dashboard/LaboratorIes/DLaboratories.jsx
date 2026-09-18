@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 // Mock data for demonstration
 const mockLaboratories = [
@@ -104,9 +105,20 @@ const LaboratoriesDashboard = () => {
                 <div className="bg-white rounded-lg shadow-md overflow-hidden">
 
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4">
-                        <h2 className="text-2xl font-bold text-white">Laboratories Management</h2>
-                        <p className="text-green-100 text-sm mt-1">Manage and view all registered laboratories</p>
+                    <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 px-6 py-4 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Laboratories Management</h2>
+                            <p className="text-green-100 text-sm mt-1">Manage and view all registered laboratories</p>
+                        </div>
+                        <Link
+                            to="/dashboard/add-laboratory"
+                            className="inline-flex items-center gap-2 bg-white text-cyan-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-cyan-50 transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add New Laboratory
+                        </Link>
                     </div>
 
                     {/* Table Header */}

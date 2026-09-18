@@ -150,7 +150,7 @@ const AskAI = () => {
   const mode = MODES[activeMode];
 
   // Initialize Gemini AI SDK
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyC1X8_k-f4MACLi-mIJr2KpsoxbywDbt_0";
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
   const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
   // Auto scroll to bottom
@@ -734,7 +734,7 @@ Provide an evidence-grounded clinical decision support response synthesizing the
                         </div>
 
                         <div className="grid grid-cols-1 gap-2.5">
-                          {msg.diseaseMatches.map((d, i) => (
+                          {msg.diseaseMatches.map((d) => (
                             <div key={d.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm space-y-2">
                               <div className="flex items-center justify-between flex-wrap gap-1">
                                 <span className="font-extrabold text-xs text-slate-900">

@@ -132,7 +132,7 @@ const DoctorDetails = () => {
 
                 <Link to={`/consultation/${doctor.id}`}>
                   <button className="px-6 py-3 bg-cyan-50 hover:bg-cyan-100 text-[#19A7CE] font-bold rounded-2xl text-xs border border-cyan-200 transition-all flex items-center gap-2">
-                    <i className="fa-solid fa-[#19A7CE] fa-headset"></i>
+                    <i className="fa-solid fa-headset"></i>
                     <span>Digital Consultation Room</span>
                   </button>
                 </Link>

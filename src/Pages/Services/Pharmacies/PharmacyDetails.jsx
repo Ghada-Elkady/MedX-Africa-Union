@@ -279,7 +279,7 @@ const PharmacyDetails = () => {
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="container mx-auto">
             <Link
-              to="/pharmacies"
+              to="/services/search/pharmacies"
               className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-4 transition-colors">
               <i className="fa-solid fa-arrow-left"></i>
               Back to Pharmacies

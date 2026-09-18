@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { MOCK_PRESCRIPTIONS } from "../../services/apiService";
 
 const PrescriptionView = () => {
   const [prescriptions, setPrescriptions] = useState([]);
   const [selectedRx, setSelectedRx] = useState(null);
   const [sentToPharmacy, setSentToPharmacy] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -14,7 +13,7 @@ const PrescriptionView = () => {
       const combined = stored.length > 0 ? stored : MOCK_PRESCRIPTIONS;
       setPrescriptions(combined);
       setSelectedRx(combined[0] || null);
-    } catch (e) {
+    } catch {
       setPrescriptions(MOCK_PRESCRIPTIONS);
       setSelectedRx(MOCK_PRESCRIPTIONS[0] || null);
     }

@@ -2,7 +2,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import '../Buttons/Swiper-Button-Style/Swiper-Buttons-Style.css'
-import { useState, useRef, use } from 'react';
+import { useState, useRef } from 'react';
 import searchIcon from "../../assets/Filter/icons8-search-64.png"
 import filtersOptions from './FiltersOptions';
 import locationImg from "../../assets/Filter/icons8-location-64.png";

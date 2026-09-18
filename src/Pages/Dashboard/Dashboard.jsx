@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { User } from "../../Components/Context/Context";
 import { getStoredAppointments, getStoredPrescriptions } from "../../services/apiService";
 
 export default function Dashboard() {
@@ -7,6 +8,9 @@ export default function Dashboard() {
   const [appointments, setAppointments] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const location = useLocation();
+  const userContext = useContext(User);
+  const userName = userContext?.auth?.user?.username || userContext?.auth?.user?.email?.split("@")[0] || "Guest";
+  const userInitial = (userName.charAt(0) || "M").toUpperCase();
 
   useEffect(() => {
     setAppointments(getStoredAppointments());
@@ -45,11 +49,11 @@ export default function Dashboard() {
         <div className="p-6 space-y-6">
           <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
             <div className="w-10 h-10 bg-gradient-to-tr from-[#19A7CE] to-[#148AA1] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-sm">
-              M
+              {userInitial}
             </div>
             <div>
               <h2 className="font-extrabold text-slate-900 text-base">MedX Portal</h2>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase">Patient & Provider Hub</p>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase">{userName}'s Hub</p>
             </div>
           </div>
 
@@ -91,7 +95,7 @@ export default function Dashboard() {
                 <span className="bg-[#19A7CE]/20 text-[#19A7CE] text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                   Patient Health Control Center
                 </span>
-                <h1 className="text-2xl sm:text-3xl font-extrabold">Welcome Back, John Doe</h1>
+                <h1 className="text-2xl sm:text-3xl font-extrabold">Welcome Back, {userName}</h1>
                 <p className="text-xs text-slate-300">Access your upcoming appointments, digital prescriptions, and AI conversations.</p>
               </div>
 

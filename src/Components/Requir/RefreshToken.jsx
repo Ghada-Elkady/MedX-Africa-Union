@@ -12,6 +12,9 @@ const RefreshToken = () => {
 
     const refreshToken = cookie.get("refresh");
     const userData = cookie.get("user");
+    const parsedUser = typeof userData === "string" ? (() => {
+        try { return JSON.parse(userData); } catch { return userData; }
+    })() : userData;
 
 
     useEffect(() => {
@@ -40,14 +43,13 @@ const RefreshToken = () => {
                 user.setAuth({
                     accessToken: newAccess,
                     refreshToken: refreshToken,
-                    user: userData
+                    user: parsedUser
                 });
                 
                 // Update cookies
                 cookie.set("Bearer", newAccess, {
                     path: "/"
                 });
-                console.log(response)
 
 
 
@@ -59,6 +61,7 @@ const RefreshToken = () => {
         };
 
         refreshAuthToken();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return loading ? <Loading /> : <Outlet />;

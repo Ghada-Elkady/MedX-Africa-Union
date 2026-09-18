@@ -3,7 +3,7 @@ import { MOCK_MEDICINES, MOCK_PHARMACIES } from "../../../services/apiService";
 import { Link } from "react-router-dom";
 
 const Pharmacies = () => {
-  const [medicines, setMedicines] = useState(MOCK_MEDICINES);
+  const medicines = MOCK_MEDICINES;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState([]);
@@ -16,7 +16,7 @@ const Pharmacies = () => {
     try {
       const storedCart = JSON.parse(localStorage.getItem('medx_cart') || '[]');
       setCart(storedCart);
-    } catch (e) {
+    } catch {
       setCart([]);
     }
   }, []);

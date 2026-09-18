@@ -15,7 +15,7 @@ const AddDoctor = () => {
   const cookie = new Cookies()
   const [doctorId, setDoctorId] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [specializations, setSpecializations] = useState(mockSpecializations);
+  const [specializations] = useState(mockSpecializations);
 
   const [info, setInfo] = useState({
     firstName: "",
@@ -171,7 +171,7 @@ const AddDoctor = () => {
     const token = cookie.get("Bearer")
     const addAvailabilities = async () => {
       try {
-        const response = await axios.post(`http://127.0.0.1:8000/api/admin/doctors/${doctorId}/availabilities/`,
+        await axios.post(`http://127.0.0.1:8000/api/admin/doctors/${doctorId}/availabilities/`,
           [...availabilities]
           , {
             headers: {
@@ -188,6 +188,7 @@ const AddDoctor = () => {
       }
     }
     addAvailabilities();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [doctorId]);
   return (
     <>

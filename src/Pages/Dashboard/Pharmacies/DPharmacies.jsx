@@ -1,12 +1,15 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Cookies from "universal-cookie";
+import { MOCK_PHARMACIES } from "../../../services/apiService";
 
 
 export default function PharmaciesDashboard() {
   const [pharmacies, setPharmacies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [demoMode, setDemoMode] = useState(false);
   const cookie = new Cookies();
   const token = cookie.get("Bearer");
 
@@ -14,6 +17,7 @@ export default function PharmaciesDashboard() {
     const fetchPharmacies = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await axios.get(
           "http://127.0.0.1:8000/api/pharmacies/", {
           headers: {
@@ -21,44 +25,29 @@ export default function PharmaciesDashboard() {
           }
         }
   );
-        console.log(response);
-
         setPharmacies(response.data);
       } catch (err) {
-        console.error(err);
-        setError("Failed to load pharmacies. Please try again.");
+        console.warn("Backend admin API unavailable, showing demo data:", err.message);
+        setDemoMode(true);
+        setPharmacies(MOCK_PHARMACIES.map((p, index) => ({
+          id: p.id || index + 1,
+          pharmacy_name: p.name,
+          pharmacy_profile: { address: p.city, phone_number: p.phone }
+        })));
       } finally {
         setLoading(false);
       }
     };
 
     fetchPharmacies();
-  }, []);
-
-  const handleDelete = async (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this pharmacy?"
-    );
-    if (!confirmed) return;
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      setPharmacies((prev) =>
-        prev.filter((pharmacy) => pharmacy._id !== id)
-      );
-    } catch (err) {
-      console.error(err);
-      setError("Failed to delete pharmacy. Please try again.");
-    }
-  };
+  }, [token]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mb-4"></div>
             <p className="text-gray-600 text-lg">Loading pharmacies...</p>
           </div>
         </div>
@@ -74,7 +63,7 @@ export default function PharmaciesDashboard() {
             <div className="text-red-500 text-lg mb-4">{error}</div>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
             >
               Retry
             </button>
@@ -90,10 +79,27 @@ export default function PharmaciesDashboard() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
 
           {/* Header */}
-          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-            <h2 className="text-2xl font-bold text-white">Pharmacies Management</h2>
-            <p className="text-green-100 text-sm mt-1">Manage and view all registered pharmacies</p>
+          <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Pharmacies Management</h2>
+              <p className="text-green-100 text-sm mt-1">Manage and view all registered pharmacies</p>
+            </div>
+            <Link
+              to="/dashboard/add-pharmacy"
+              className="inline-flex items-center gap-2 bg-white text-green-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-50 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Pharmacy
+            </Link>
           </div>
+
+          {demoMode && (
+            <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-amber-800 text-sm">
+              <span className="font-semibold">Demo mode:</span> backend not reachable — showing sample data.
+            </div>
+          )}
 
           {/* Table Header */}
           <div className="grid grid-cols-3 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-200 font-semibold text-gray-700 text-sm">

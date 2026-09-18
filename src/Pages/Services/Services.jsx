@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { MOCK_LABS, MOCK_RADIOLOGY } from "../../services/apiService";
 
 const Services = () => {
-  const [activeTab, setActiveTab] = useState("labs");
+  const location = useLocation();
+  const initialTab = location.pathname.toLowerCase().includes("radiologies") ? "radiology" : "labs";
+  const [activeTab] = useState(initialTab);
   const [searchTerm, setSearchTerm] = useState("");
   const [bookedFacility, setBookedFacility] = useState(null);
 
@@ -38,23 +40,23 @@ const Services = () => {
             
             {/* View Tabs */}
             <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl w-full sm:w-auto">
-              <button
-                onClick={() => setActiveTab("labs")}
-                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all w-full sm:w-auto ${
+              <Link
+                to="/services/search/Laboratories"
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all w-full sm:w-auto text-center ${
                   activeTab === "labs" ? "bg-[#19A7CE] text-white shadow-md" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <i className="fa-solid fa-vial mr-2"></i> Diagnostic Labs ({MOCK_LABS.length})
-              </button>
+              </Link>
 
-              <button
-                onClick={() => setActiveTab("radiology")}
-                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all w-full sm:w-auto ${
+              <Link
+                to="/services/search/radiologies"
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold transition-all w-full sm:w-auto text-center ${
                   activeTab === "radiology" ? "bg-[#19A7CE] text-white shadow-md" : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <i className="fa-solid fa-x-ray mr-2"></i> Radiology Centers ({MOCK_RADIOLOGY.length})
-              </button>
+              </Link>
             </div>
 
             {/* Search Input */}
@@ -69,6 +71,15 @@ const Services = () => {
               />
             </div>
 
+          </div>
+
+          <div className="flex justify-end">
+            <Link
+              to={activeTab === "labs" ? "/laboratories" : "/radiologies"}
+              className="text-[#19A7CE] text-xs font-bold hover:underline"
+            >
+              View full directory <i className="fa-solid fa-arrow-right ml-1"></i>
+            </Link>
           </div>
         </div>
 

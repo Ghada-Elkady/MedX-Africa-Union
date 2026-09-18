@@ -1,32 +1,16 @@
 import { useParams, Link } from "react-router-dom";
-// import "../PagesStyle.css";
+import { getRadiologyById } from "../../../services/apiService";
 
-const RadiologyDetails = () => {
-  const { id } = useParams();
-
-  // في الواقع، ستجلب البيانات من API حسب الـ id
-  const radiologyCenter = {
-    id: 1,
-    name: "Advanced Imaging Center",
-    nameAr: "مركز التصوير المتقدم",
-    icon: "📡",
-    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800",
-    location: "456 Medical District, Downtown, Cairo, Egypt",
-    locationAr: "456 الحي الطبي، وسط البلد، القاهرة، مصر",
-    rating: 4.9,
-    reviews: 328,
-    phone: "+20 123 456 7890",
-    email: "info@advancedimaging.com",
-    website: "www.advancedimaging.com",
-    openTime: "24 Hours",
-    closeTime: "",
-    workingDays: "Open Daily",
-    workingDaysAr: "مفتوح يومياً",
-    emergency: true,
-    description:
-      "Advanced Imaging Center is a leading radiology facility in Egypt, equipped with the latest imaging technology including high-field MRI, multi-slice CT scanners, and digital X-ray systems. Our board-certified radiologists provide accurate and timely diagnostic reports.",
-    descriptionAr:
-      "مركز التصوير المتقدم هو مرفق رائد للأشعة في مصر، مجهز بأحدث تقنيات التصوير بما في ذلك الرنين المغناطيسي عالي المجال، والأشعة المقطعية متعددة الشرائح، وأنظمة الأشعة السينية الرقمية. يقدم أخصائيو الأشعة المعتمدون لدينا تقارير تشخيصية دقيقة وفي الوقت المناسب.",
+const EXTRA_STATIC = {
+  phone: "+20 123 456 7890",
+  email: "info@medx-imaging.com",
+  website: "www.medx-imaging.com",
+  workingDays: "Open Daily",
+  workingDaysAr: "مفتوح يومياً",
+  description:
+    "A leading radiology facility within the MedX network, equipped with the latest imaging technology including high-field MRI, multi-slice CT scanners, and digital X-ray systems. Board-certified radiologists provide accurate and timely diagnostic reports.",
+  descriptionAr:
+    "مرفق رائد للأشعة ضمن شبكة ميديكس، مجهز بأحدث تقنيات التصوير بما في ذلك الرنين المغناطيسي عالي المجال، والأشعة المقطعية متعددة الشرائح، وأنظمة الأشعة السينية الرقمية." ,
     services: [
       {
         category: "MRI Scans",
@@ -265,6 +249,32 @@ const RadiologyDetails = () => {
     ],
   };
 
+const RadiologyDetails = () => {
+  const { id } = useParams();
+  const base = getRadiologyById(id);
+
+  if (!base) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-32 pb-20 flex items-center justify-center">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-12 text-center max-w-md">
+          <i className="fa-solid fa-x-ray text-5xl text-slate-300 mb-4"></i>
+          <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Radiology Center Not Found</h1>
+          <p className="text-sm text-slate-500 mb-6">The radiology center you are looking for does not exist.</p>
+          <Link to="/radiologies" className="inline-flex items-center gap-2 bg-[#19A7CE] text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-[#148AA1] transition-colors">
+            <i className="fa-solid fa-arrow-left"></i>
+            Back to Radiology Centers
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const radiologyCenter = {
+    ...base,
+    image: base.image.replace("w=500", "w=800"),
+    ...EXTRA_STATIC,
+  };
+
   return (
     <div className="radiology-details-page">
       {/* Header with Image */}
@@ -280,7 +290,7 @@ const RadiologyDetails = () => {
         <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
           <div className="container mx-auto">
             <Link
-              to="/radiology"
+              to="/radiologies"
               className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-4 transition-colors">
               <i className="fa-solid fa-arrow-left"></i>
               Back to Radiology Centers
