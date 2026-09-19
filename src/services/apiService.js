@@ -17,6 +17,7 @@ export const STORAGE_KEYS = {
   SHIFTS: 'seta_shifts',
   REMINDERS: 'seta_reminders',
   LANG: 'seta_lang',
+  CONSULTATIONS: 'seta_consultations',
 };
 
 // Initial Mock Doctors Data

@@ -107,6 +107,7 @@ const PatientProfile = () => {
             { to: "/dashboard", icon: "fa-chart-line", label: "Dashboard" },
             { to: "/smart-watch", icon: "fa-regular fa-clock", label: "Smart Watch" },
             { to: "/reminders", icon: "fa-bell", label: "Reminders" },
+            { to: "/online-consultation", icon: "fa-regular fa-video", label: "Online Consultation" },
             { to: "/prescriptions", icon: "fa-prescription-bottle-medical", label: "Prescriptions" },
             { to: "/ask", icon: "fa-wand-magic-sparkles", label: "Ask MedX AI" },
             { to: "/doctors", icon: "fa-user-doctor", label: "Find a Doctor" },

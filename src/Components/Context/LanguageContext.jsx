@@ -51,7 +51,8 @@ const translations = {
     rescue_diseases: { en: "Disaster Diseases & Health Risks", ar: "أمراض ومخاطر الكوارث الصحية" },
     rescue_volunteer_signup: { en: "Become a Rescue Volunteer", ar: "انضم كمتطوع إنقاذ" },
     rescue_shifts: { en: "Rescue Shifts", ar: "ورديات الإنقاذ" },
-    rescue_map: { en: "Live Rescue Map", ar: "خريطة الإنقاذ الحية" }
+    rescue_map: { en: "Live Rescue Map", ar: "خريطة الإنقاذ الحية" },
+    nav_consultation: { en: "Online Consultation", ar: "استشارة أونلاين" }
 };
 
 const LanguageContext = createContext({ lang: "en", t: (k) => k, toggleLang: () => {} });

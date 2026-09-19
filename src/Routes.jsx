@@ -38,6 +38,7 @@ import Privacy from "./Pages/Legal/Privacy";
 import SmartWatch from "./Pages/Wearable/SmartWatch";
 import Reminders from "./Pages/Reminders/Reminders";
 import ConsultationRoom from "./Pages/Consultation/ConsultationRoom";
+import OnlineConsultation from "./Pages/Consultation/OnlineConsultation";
 import PrescriptionView from "./Pages/Prescriptions/PrescriptionView";
 import ReportExplainer from "./Pages/ReportExplainer/ReportExplainer";
 
@@ -51,6 +52,7 @@ const AppRoutes = () => {
         <Route path="/doctors" element={<Doctors />} />
         <Route path="/doctor/:id" element={<DoctorDetails />} />
         <Route path="/consultation/:id" element={<ConsultationRoom />} />
+        <Route path="/online-consultation" element={<OnlineConsultation />} />
         <Route path="/prescriptions" element={<PrescriptionView />} />
         <Route path="/report-explainer" element={<ReportExplainer />} />
         <Route path="/ask" element={<AskAI />} />

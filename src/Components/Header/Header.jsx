@@ -18,6 +18,7 @@ const Header = () => {
         { to: "/", label: "Home", labelKey: "nav_home", id: "home" },
         { to: "/ask", label: "Ask MedX AI", labelKey: "nav_ask", id: "ask", isAi: true },
         { to: "/doctors", label: "Doctors", labelKey: "nav_doctors", id: "doctors" },
+        { to: "/online-consultation", label: "Online Consultation", labelKey: "nav_consultation", id: "consultation" },
         { to: "/prescriptions", label: "Prescriptions", labelKey: "nav_prescriptions", id: "prescriptions" },
         { to: "/services/search/pharmacies", label: "E-Pharmacy", labelKey: "nav_pharmacy", id: "pharmacies" },
         {
